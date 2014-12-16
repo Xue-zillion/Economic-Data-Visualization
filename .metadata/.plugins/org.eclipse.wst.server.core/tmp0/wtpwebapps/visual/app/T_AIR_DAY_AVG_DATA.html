@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>日均值表</title>
+
+<!-- Bootstrap core CSS -->
+<link href="scripts/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link
+	href="scripts/bootstrap/bootstrapdatetimepicker/css/bootstrap-datetimepicker.min.css"
+	rel="stylesheet">
+<link rel="stylesheet"
+	href="http://code.jquery.com/ui/1.9.0/themes/base/jquery-ui.css" />
+<link rel="stylesheet" href="nvd3.css" />
+<script type="text/javascript" src="scripts/nvd3/d3.v3.js"></script>
+<script type="text/javascript" src="scripts/nvd3/nv.d3.js"></script>
+<script type="text/javascript" src="scripts/jquery/jquery.js"></script>
+<script src="http://code.jquery.com/ui/1.9.0/jquery-ui.js"></script>
+<script type="text/javascript"
+	src="scripts/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript"
+	src="scripts/bootstrap/bootstrapdatetimepicker/js/bootstrap-datetimepicker.min.js"></script>
+<style type="text/css">
+#rRightDown, #rLeftDown, #rLeftUp, #rRightUp, #rRight, #rLeft, #rUp,
+	#rDown {
+	position: absolute;
+	background: #C00;
+	width: 7px;
+	height: 7px;
+	z-index: 5;
+	font-size: 0;
+}
+
+#rLeftDown, #rRightUp {
+	cursor: ne-resize;
+}
+
+#rRightDown, #rLeftUp {
+	cursor: nw-resize;
+}
+
+#rRight, #rLeft {
+	cursor: e-resize;
+}
+
+#rUp, #rDown {
+	cursor: n-resize;
+}
+
+#rLeftDown {
+	left: -4px;
+	bottom: -4px;
+}
+
+#rRightUp {
+	right: -4px;
+	top: -4px;
+}
+
+#rRightDown {
+	right: -4px;
+	bottom: -4px;
+	background-color: #00F;
+}
+
+#rLeftUp {
+	left: -4px;
+	top: -4px;
+}
+
+#rRight {
+	right: -4px;
+	top: 50%;
+	margin-top: -4px;
+}
+
+#rLeft {
+	left: -4px;
+	top: 50%;
+	margin-top: -4px;
+}
+
+#rUp {
+	top: -4px;
+	left: 50%;
+	margin-left: -4px;
+}
+
+#rDown {
+	bottom: -4px;
+	left: 50%;
+	margin-left: -4px;
+}
+
+#dragDiv {
+	border-left: 2px dashed #0F0;
+	border-right: 2px dashed #0F0;
+	top: 180px;
+	left: 100px;
+	right: 100px;
+	width: 90%;
+}
+
+#tool {
+	display: block;
+	bottom: -20px;
+	left: 0px;
+	right: 100px;
+	width: 100%;
+	height: 10px;
+	position: fixed;
+	text-align: center;
+}
+/* body {
+	font: 10px sans-serif;
+	font-weight: bold; //
+	font-family: SimSun;
+	shape-rendering: crispEdges;
+} */
+.day {
+	fill: #fff;
+	stroke: #ccc;
+}
+
+.month {
+	fill: none;
+	stroke: #000;
+	stroke-width: 2px;
+}
+
+.yearLabel {
+	font: 12px sans-serif;
+	font-weight: bold;
+	text-anchor: middle;
+}
+
+.RdYlGn .q0-11 {
+	fill: rgb(165, 0, 38)
+}
+
+.RdYlGn .q1-11 {
+	fill: rgb(215, 48, 39)
+}
+
+.RdYlGn .q2-11 {
+	fill: rgb(244, 109, 67)
+}
+
+.RdYlGn .q3-11 {
+	fill: rgb(253, 174, 97)
+}
+
+.RdYlGn .q4-11 {
+	fill: rgb(254, 224, 139)
+}
+
+.RdYlGn .q5-11 {
+	fill: rgb(255, 255, 191)
+}
+
+.RdYlGn .q6-11 {
+	fill: rgb(217, 239, 139)
+}
+
+.RdYlGn .q7-11 {
+	fill: rgb(166, 217, 106)
+}
+
+.RdYlGn .q8-11 {
+	fill: rgb(102, 189, 99)
+}
+
+.RdYlGn .q9-11 {
+	fill: rgb(26, 152, 80)
+}
+
+.RdYlGn .q10-11 {
+	fill: rgb(0, 104, 55)
+}
+
+.AirColor .q0-7 {
+	fill: rgb(0, 255, 0)
+}
+
+.AirColor .q1-7 {
+	fill: rgb(255, 255, 0)
+}
+
+.AirColor .q2-7 {
+	fill: rgb(255, 165, 0)
+}
+
+.AirColor .q3-7 {
+	fill: rgb(255, 0, 0)
+}
+
+.AirColor .q4-7 {
+	fill: rgb(128, 0, 128)
+}
+
+.AirColor .q5-7 {
+	fill: rgb(128, 0, 0)
+}
+
+.AirColor .q6-7 {
+	fill: rgb(128, 0, 0)
+}
+</style>
+
+</head>
+<body>
+	<h1 align="center" style="margin-top: 20px; margin-bottom: 30px">日均值表</h1>
+	<div class="well" style="height: 60px;">
+		<div id="datetimepicker1" class="input-append date"
+			style="margin-right: 20px; margin-left: 120px; float: left;">
+			<label>起始日期</label> <input data-format="yyyy/MM/dd hh:mm:ss"
+				id="date1" type="text" value="2014/01/01 00:00:00"></input> <span
+				class="add-on"> <span class="glyphicon glyphicon-calendar"
+				data-time-icon="icon-time" data-date-icon="icon-calendar"
+				style="cursor: pointer"></span>
+			</span>
+		</div>
+		<div id="datetimepicker2" class="input-append date"
+			style="margin-right: 20px; float: left;">
+			<label>截止日期</label> <input data-format="yyyy/MM/dd hh:mm:ss"
+				id="date2" type="text" value="2014/03/01 00:00:00"></input> <span
+				class="add-on"> <span class="glyphicon glyphicon-calendar"
+				data-time-icon="icon-time" data-date-icon="icon-calendar"
+				style="cursor: pointer"></span>
+			</span>
+		</div>
+
+		<div>
+			<label style="float: left">选择显示样式</label> <select
+				onchange="selectStyle()" id="selectStyle" name="selectStyle"
+				style='float: left'>
+				<option VALUE="01" SELECTED>折线图</option>
+				<option VALUE="日历图">日历图</option>
+				<option VALUE="03">数据过滤图</option>
+				<option VALUE="04">堆叠条形图</option>
+				<option VALUE="05">堆积面积图</option>
+			</select> <select name="gas" id="gas" style='float: left; display: none'>
+				<option value="SO2" SELECTED>SO2</option>
+				<option value="CO">CO</option>
+				<option value="O3">O3</option>
+			</select> <a class="btn btn-success" id="redraw" role="button"
+				style="padding: 10px 15px; margin-left: 20px;">重画</a> <label
+				style="margin-left: 200px;">其他表:</label> <a
+				href="http://localhost:8080/visual/app/T_AIR_HOUR_AVG_DATA.html"
+				target="_blank" style="margin-left: 0px;">小时均值表</a> <a
+				href="http://localhost:8080/visual/app/T_AIR_MONTH_AVG_DATA.html"
+				target="_blank" style="margin-left: 10px;">月均值表</a> <a
+				href="http://localhost:8080/visual/app/T_AIR_YEAR_AVG_DATA.html"
+				target="_blank" style="margin-left: 10px;">年均值表</a> <a
+				href="http://localhost:8080/visual/app/T_AIR_DAY_GRADE.html"
+				target="_blank" style="margin-left: 10px;">日空气等级表</a> <a
+				href="http://localhost:8080/visual/app/T_AIR_API_MONTH_STATS.html"
+				target="_blank" style="margin-left: 10px;">月API等级天数表</a> <a
+				href="http://localhost:8080/visual/app/T_AIR_AQI_MONTH_STATS.html"
+				target="_blank" style="margin-left: 10px;">月AQI等级天数表</a>
+
+		</div>
+
+	</div>
+
+	<script type="text/javascript">
+		$(function() {
+			$('#datetimepicker1').datetimepicker({
+				pickTime : false
+			});
+
+			$('#datetimepicker2').datetimepicker({
+				pickTime : false
+			});
+
+		});
+	</script>
+	<div id="DIV">
+		<div id="dragDiv">
+			<!-- <div id="rRightDown"></div>
+			<div id="rLeftDown"></div>
+			<div id="rRightUp"></div>
+			<div id="rLeftUp"></div> -->
+			<div id="rRight"></div>
+			<div id="rLeft"></div>
+			<!-- 	<div id="rUp"></div>
+			<div id="rDown"></div> -->
+			<div id="chart1" class='with-transitions' style='padding: 0 0 1%'>
+				<svg
+					style='padding: 0 5%; height: 150px; overflow-y: scroll; display: block;'>
+		</svg>
+			</div>
+			<div id="chart2" class='with-transitions' style='padding: 0 0 1%'>
+				<svg
+					style='padding: 0 5%; height: 150px; overflow-y: scroll; display: block;'>
+		</svg>
+			</div>
+
+			<div id="chart3" class='with-transitions' style='padding: 0 0 1%'>
+				<svg
+					style='padding: 0 5%; height: 150px; overflow-y: scroll; display: block;'>
+		</svg>
+			</div>
+
+			<div id="chart4" class='with-transitions' style='padding: 0 0 1%'>
+				<svg
+					style='padding: 0 5%; height: 150px; overflow-y: scroll; display: block;'>
+		</svg>
+			</div>
+
+			<div id="chart5" class='with-transitions' style='padding: 0 0 1%'>
+				<svg
+					style='padding: 0 5%; height: 150px; overflow-y: scroll; display: block;'>
+		</svg>
+			</div>
+
+			<div id="chart6" class='with-transitions' style='padding: 0 0 1%'>
+				<svg
+					style='padding: 0 5%; height: 150px; overflow-y: scroll; display: block;'>
+		</svg>
+			</div>
+			<div id="chart7" class='with-transitions' style='padding: 0 0 3%'>
+				<svg
+					style='padding: 0 5%; height: 150px; overflow-y: scroll; display: block;'>
+		</svg>
+			</div>
+		</div>
+	</div>
+	
+	<div id="tool" class="well" style="height: 30px;">
+		<div>
+			<button id="play" class="btn btn-success" onclick="play()"
+				style="width: 70px; height: 30px; TEXT-ALIGN: center; float: left; margin-top: -15px">前进</button>
+		</div>
+		<div id="slider"
+			style="width: 90%; height: 15px; float: left; margin-left: 20px; transition-duration: 100ms; box-shadow: inset 0 0 4px rgba(163, 18, 0, 0.7), inset 0 0 2px rgba(0, 0, 0, 0.5); margin-top: -5px; background: #e69e9b">
+			<script>
+				$(function() {
+					$("#slider").slider({
+						range : true,
+						min : startdate,
+						max : enddate,
+						values : [ startdate, enddate ],
+						slide : function(event, ui) {
+							maxv = d3.min([ ui.values[1], enddate ]);
+							minv = d3.max([ ui.values[0], startdate ]);
+							for (var i = 1; i < 8; i++) {
+								chartlist[i].xDomain([ minv, maxv ]);
+								chartlist[i].update();
+							}
+							currentMax = maxv;
+							currentMin = minv;
+						}
+					});
+				});
+			</script>
+		</div>
+		<div>
+			<button id="play" class="btn btn-success" onclick="reverse()"
+				style="width: 70px; height: 30px; float: left; margin-left: 20px; margin-top: -15px">后退</button>
+		</div>
+	</div>
+	<script type="text/javascript">
+	var starttime = null, endtime = null;
+	var alljson, so2json, no2json, cojson, o3json, pm10json, pm25json;
+	var chartlist = [];
+	var listvalue = "折线图", gas_listval = "SO2";
+	var startdate, enddate;
+	var so2data = [], no2data = [], codata = [], o3data = [], pm10data = [], pm25data = [], so2_cal_data = []
+	, so2_cal_data = [], co_cal_data = [], no2_cal_data = [], o3_cal_data = [],pm10_cal_data = [], pm25_cal_data = [];
+
+	myData(starttime, endtime);
+	//console.log(JSON.stringify(so2json));
+	var datainit = [ alljson, so2json, no2json, cojson, o3json, pm10json,
+			pm25json ];
+	for (var i = 1; i < 8; i++) {
+		addGraph('#chart' + i + ' svg', datainit[i - 1], i);
+	}
+
+	function myData(starttime, endtime) {
+		
+		so2data = []; no2data = []; codata = []; o3data = []; pm10data = []; pm25data = []; so2_cal_data = [];
+		$.ajaxSetup({
+			contentType : "application/json"
+		});
+		starttime = $("#date1").val();
+		endtime = $("#date2").val();
+		var selectStyle = $("#selectStyle").val();
+		gas_listval = $("#gas").val();
+		
+		var param = {};
+		param.time = starttime + "," + endtime;
+		$
+				.ajax({
+					type : "GET",
+					url : "webresources/myresource/testdata2",
+					async : false, //run synchronously, the program will have to wait until success after running statement to complete and return the results to continue executing the next statement
+					data : param,
+					success : function(data) {
+						startdate = new Date(parseInt(data[0][0]),
+								parseInt(data[0][1]) - 1, Number(data[0][2]))
+								.getTime();
+						enddate = new Date(parseInt(data[data.length - 1][0]),
+								parseInt(data[data.length - 1][1]) - 1,
+								Number(data[data.length - 1][2])).getTime();
+						$(data)
+								.each(
+										function(index, value) {
+									if (selectStyle=="日历图") {
+										var date = value[0] + "/"//日历图用的date格式
+										+ value[1] + "/"
+										+ value[2];
+										starttime =""; endtime ="";
+									} else {
+										var date = new Date(//其他图用的date格式
+												parseInt(value[0]),
+												parseInt(value[1]) - 1,
+												Number(value[2]))
+												.getTime();
+									}
+									if (starttime == ""&& endtime == "") {
+												so2data.push({
+													x : date,
+													y : parseFloat(value[3])
+												});
+												no2data.push({
+													x : date,
+													y : parseFloat(value[4])
+												});
+												codata.push({
+													x : date,
+													y : parseFloat(value[5])
+												});
+												o3data.push({
+													x : date,
+													y : parseFloat(value[6])
+												});
+												pm10data.push({
+													x : date,
+													y : parseFloat(value[7])
+												});
+												pm25data.push({
+													x : date,
+													y : parseFloat(value[8])
+												});
+											} else {
+												//if(Number(starttime.split(' ')[0].split('/')[0])<=Number(value[0])&&Number(starttime.split(' ')[0].split('/')[1])<=Number(value[1])&&Number(starttime.split(' ')[0].split('/')[2])<=Number(value[2])){
+												var datestart = new Date(
+														Number(starttime
+																.split(' ')[0]
+																.split('/')[0]),
+														Number(starttime
+																.split(' ')[0]
+																.split('/')[1]) - 1,
+														Number(starttime
+																.split(' ')[0]
+																.split('/')[2]))
+														.getTime();
+												var dateend = new Date(
+														Number(endtime
+																.split(' ')[0]
+																.split('/')[0]),
+														Number(endtime
+																.split(' ')[0]
+																.split('/')[1]) - 1,
+														Number(endtime
+																.split(' ')[0]
+																.split('/')[2]))
+														.getTime();
+												var datetemp = new Date(
+														Number(value[0]),
+														Number(value[1]) - 1,
+														Number(value[2]))
+														.getTime();
+												//document.writeln(new Date(2014,0,1,0,0,0).getTime()+"a"+new Date(2014,0,2,0,0,0).getTime());
+												startdate = (startdate < datestart) ? datestart
+														: startdate;
+												enddate = (enddate > dateend) ? dateend
+														: enddate;
+												if (datetemp >= datestart
+														&& datetemp <= dateend) {
+													so2data
+															.push({
+																x : date,
+																y : parseFloat(value[3])
+															});
+													no2data
+															.push({
+																x : date,
+																y : parseFloat(value[4])
+															});
+													codata
+															.push({
+																x : date,
+																y : parseFloat(value[5])
+															});
+													o3data
+															.push({
+																x : date,
+																y : parseFloat(value[6])
+															});
+													pm10data
+															.push({
+																x : date,
+																y : parseFloat(value[7])
+															});
+													pm25data
+															.push({
+																x : date,
+																y : parseFloat(value[8])
+															});
+												} else {
+
+												}
+
+											}
+
+										});
+					},
+					dataType : "json"
+				});
+
+		alljson = [ {
+			key : "SO2",
+			values : so2data,
+			color : "#FFC0CB"
+		}, {
+			key : "NO2",
+			values : no2data,
+			color : "#FF83FA"
+		}, {
+			key : "CO",
+			values : codata,
+			color : "#CAFF70"
+		}, {
+			key : "O3",
+			values : o3data,
+			color : "#9B30FF"
+		}, {
+			key : "PM10",
+			values : pm10data,
+			color : "#7CFC00"
+		}, {
+			key : "PM2.5",
+			values : pm25data,
+			color : "#0000FF"
+		} ];
+		so2json = [ {
+			key : "SO2",
+			values : so2data,
+			color : "#FFC0CB"
+		} ];
+		no2json = [ {
+			key : "NO2",
+			values : no2data,
+			color : "#FF83FA"
+		} ];
+		cojson = [ {
+			key : "CO",
+			values : codata,
+			color : "#CAFF70"
+		} ];
+		o3json = [ {
+			key : "O3",
+			values : o3data,
+			color : "#9B30FF"
+		} ];
+		pm10json = [ {
+			key : "PM10",
+			values : pm10data,
+			color : "#7CFC00"
+		} ];
+		pm25json = [ {
+			key : "PM2.5",
+			values : pm25data,
+			color : "#0000FF"
+		} ];
+	}
+	
+	$(document)
+	.ready(
+			function() {
+				
+				$("#redraw")
+						.click(
+								function() {
+									starttime = $("#date1").val();
+									endtime = $("#date2").val();
+									var selectStyle = $("#selectStyle").val();
+									gas_listval = $("#gas").val();
+									if (selectStyle=="日历图") {
+										myData(starttime, endtime);
+										switch (gas_listval) {
+										case "SO2":
+											calendar_graph(so2data);
+											break;
+										case "NO2":
+											calendar_graph(no2data);
+											break;
+										case "O3":
+											calendar_graph(o3data);
+											break;
+										case "CO":
+											calendar_graph(codata);
+											break;
+										case "PM10":
+											calendar_graph(pm10data);
+											break;
+										case "PM25":
+											calendar_graph(pm25data);
+											break;
+
+										default:
+											break;
+										}
+										
+										document.getElementById("tool").style.display = "none";
+									} else {
+										myData(starttime, endtime);
+										var datalist = [ alljson,
+												so2json, no2json,
+												cojson, o3json,
+												pm10json, pm25json];
+										//console.log(JSON.stringify(so2json));
+										for (var i = 1; i < 8; i++) {
+											var div = document
+													.getElementById('chart'
+															+ i);
+											div.style.width = "100%";
+											div.style.styleFloat = "";
+											document
+													.getElementById('chart'
+															+ i).innerHTML = "<svg style='padding: 0 5%; height: 150px; overflow-y: scroll; display: block;'></svg>";
+											addGraph('#chart' + i
+													+ ' svg',
+													datalist[i - 1], i);
+										}
+									}
+
+								});
+			});	
+
+	function calendar_graph(gas_data) {
+		var cellSize = 17; // cell size
+		var margin = {
+			top : 19,
+			right : 20,
+			bottom : 20,
+			left : 70
+		};
+		var width = 54 * cellSize + margin.right + margin.left + 400; // width
+		var height = 7 * cellSize + margin.top + margin.bottom; // height
+		//var width = 960,
+		// height = 150,
+
+		var day = function(d) {
+			var tmp = d3.time.format("%w")(d) - 1;
+			if (tmp < 0) {
+				tmp = 6;
+			}
+			return tmp;
+		}
+		//var day = d3.time.format("%w"),
+		//var week = d3.time.format("%U"),
+		var week = d3.time.format("%W"), percent = d3.format(".1%"), format = d3.time
+				.format("%Y/%m/%d");
+
+		var color = function(domain, d) {
+			var tmp = d3.scale.threshold().domain(
+					[ 0.035, 0.145, 0.225, 0.305, 0.605, 0.805 ]).range(
+					d3.range(7).map(function(d) {
+						return "q" + d + "-7";
+					}));
+			return tmp(d);
+		}
+		//document.getElementById('DIV').innerHTML = "";
+		for (var int = 1; int < 8; int++) {
+			document.getElementById("chart"+int).innerHTML = "<svg style='padding: 0 5%; height: 80px; overflow-y: scroll; display: block;'></svg>";
+		}
+										
+		var svg = d3.select("chart1 svg").data(d3.range(2009, 2015))
+				.enter().append("svg").attr("width", width).attr("height",
+						height).attr("class", "AirColor").append("g").attr(
+						"transform",
+						"translate(" + (width - cellSize * 54 - margin.right)
+								+ "," + (height - cellSize * 7 - margin.bottom)
+								+ ")");
+
+		svg.append("text").attr("transform",
+				"translate(-40," + cellSize * 3.5 + ")rotate(-90)").attr(
+				"class", "yearLabel").text(function(d) {
+			return d;
+		});
+
+		var rect = svg.selectAll(".day").data(function(d) {
+			return d3.time.days(new Date(d, 0, 1), new Date(d + 1, 0, 1));
+		}).enter().append("rect").attr("class", "day").attr("width", cellSize)
+				.attr("height", cellSize).attr("x", function(d) {
+					return week(d) * cellSize;
+				}).attr("y", function(d) {
+					return day(d) * cellSize;
+				}).datum(format);
+
+		rect.append("title").text(function(d) {
+			return d;
+		});
+
+		svg.selectAll(".month").data(function(d) {
+			return d3.time.months(new Date(d, 0, 1), new Date(d + 1, 0, 1));
+		}).enter().append("path").attr("class", "month").attr("d", monthPath);
+
+		var month_name = d3.time.format("%b");
+		var month_number = d3.time.format("%m");
+		var month_name_cn = [ "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月",
+				"9月", "10月", "11月", "12月" ];
+		svg.selectAll("text.month").data(function(d) {
+			return d3.time.months(new Date(d, 0, 1), new Date(d + 1, 0, 1));
+		}).enter().append("text").attr("x", function(d) {
+			return week(d) * cellSize;
+		}).attr("y", 8 * cellSize).text(function(d) {
+			return month_name_cn[(+month_number(d) - 1)];
+		});
+
+		var weekday_name = d3.time.format("%a");
+		var weekday_name_cn = [ "周一", "周二", "周三", "周四", "周五", "周六", "周日" ];
+		svg.selectAll("text.weekday").data(function(d) {
+			return d3.time.days(new Date(d, 0, 1), new Date(d, 0, 8));
+		}).enter().append("text").attr("x", -cellSize - 10).attr(
+				"y",
+				function(d) {
+					return (day(d) - 0.3) * cellSize
+							+ (height - cellSize * 7 - margin.bottom);
+				}).text(function(d) {
+			return weekday_name_cn[day(d)];
+		});
+
+		//myData('allyear');
+		//document.write(JSON.stringify(so2json));
+		//csv = JSON.parse( so2data ); 
+		//console.log(JSON.stringify(so2data));
+		// d3.csv("SO2_daily.csv", function(error, csv) {
+		//console.log(JSON.stringify(csv));
+		//console.log(JSON.stringify(gas_data));
+		//console.log(csv);
+		//console.log(so2data);
+		//console.log(new Date(so2data[0].x).getFullYear()+'/'+new Date(so2data[0].x).getMonth()+1+'/'+new Date(so2data[0].x).getDate());
+		//console.log(new Date(parseInt(so2data[0].x) * 1000).toLocaleString());
+		var data = d3.nest().key(function(d) {
+			return d.x;
+		}).rollup(function(d) {
+			return d[0].y;
+		}).map(gas_data);
+		var domain = gas_data.map(function(d) {
+			return d.y;
+		});
+		//var domain = ss.jenks(csv.map(function(d) { return d.VALUE; }), 11);
+		rect.filter(function(d) {
+			return d in data;
+		}).attr("class", function(d) {
+			return "day " + color(domain, data[d]);
+		}).select("title").text(function(d) {
+			return d + ": " + data[d];
+		});
+		//});
+
+		function monthPath(t0) {
+			var t1 = new Date(t0.getFullYear(), t0.getMonth() + 1, 0), d0 = +day(t0), w0 = +week(t0), d1 = +day(t1), w1 = +week(t1);
+			return "M" + (w0 + 1) * cellSize + "," + d0 * cellSize + "H" + w0
+					* cellSize + "V" + 7 * cellSize + "H" + w1 * cellSize + "V"
+					+ (d1 + 1) * cellSize + "H" + (w1 + 1) * cellSize + "V" + 0
+					+ "H" + (w0 + 1) * cellSize + "Z";
+		}
+
+		d3.select(self.frameElement).style("height", "2910px");
+		
+	}
+
+	function addGraph(svg, data, i) {
+
+		nv.addGraph(function() {
+
+			if (listvalue == "折线图") {
+				var chart = nv.models.lineChart().margin({
+					top : 0,
+					right : 20,
+					bottom : 25,
+					left : 20
+				}).showLegend(true).showYAxis(true).showXAxis(true)
+						.useInteractiveGuideline(true);
+				chartlist[i] = chart;
+
+			} else if (listvalue == "堆叠条形图") {
+				var chart = nv.models.multiBarChart().margin({
+					top : 0,
+					right : 20,
+					bottom : 25,
+					left : 20
+				});
+				chartlist[i] = chart;
+			} else if (listvalue == "堆积面积图") {
+				var chart = nv.models.stackedAreaChart().margin({
+					top : 0,
+					right : 20,
+					bottom : 25,
+					left : 20
+				}).showLegend(true).useInteractiveGuideline(true);
+				chartlist[i] = chart;
+			} else if (listvalue == "数据过滤图") {
+				var chart = nv.models.lineWithFocusChart().showLegend(true);
+				chart.x2Axis
+				//.axisLabel("日期(年/月/日)")
+				.tickFormat(function(d) {
+					return d3.time.format("%Y/%m")(new Date(d))
+				});
+				chart.y2Axis
+				//.axisLabel("记录值")
+				.tickFormat(d3.format('.03f')).showMaxMin(true);
+				chartlist[i] = chart;
+			}
+
+			chart.xAxis
+			//.axisLabel("日期(年/月/日)")
+			.tickFormat(function(d) {
+				return d3.time.format("%y/%m/%d")(new Date(d))
+			});
+
+			chart.yAxis
+			//.axisLabel("记录值")
+			.tickFormat(d3.format('.03f')).showMaxMin(true);
+
+			d3.select(svg).datum(data).transition().duration(400).call(chart);
+			nv.utils.windowResize(chart.update);
+			return chart;
+		});
+	}
+
+	function selectStyle() {
+		var obj = document.getElementById('selectStyle');
+		var index = obj.selectedIndex;
+		var val = obj.options[index].text;
+		listvalue = val;
+		var selectStyle = $("#selectStyle").val();
+		gas_listval = $("#gas").val();
+		switch (selectStyle) {
+		case "01":
+			document.getElementById("gas").style.display = "none";
+			break;
+		case "日历图":
+			$("#gas").empty();
+			document.getElementById("gas").style.display = "";
+			$(
+					"<option value='SO2'>SO2</option><option value='CO'>CO</option><option value='O3'>O3</option><option value='NO2'>NO2</option><option value='PM10'>PM10</option><option value='PM25'>PM25</option>")
+					.appendTo("#gas");
+			break;
+		case "03":
+			document.getElementById("gas").style.display = "none";
+			break;
+		case "04":
+			document.getElementById("gas").style.display = "none";
+			break;
+		case "05":
+			document.getElementById("gas").style.display = "none";
+			break;
+		}
+	}
+</script>
+<script type="text/javascript">
+		var maxv;
+		var minv;
+		var currentMin = startdate;
+		var currentMax = enddate;
+
+		function play() {
+
+			maxv = currentMax + 86400000;
+			minv = currentMin + 86400000;
+
+			for (var i = 1; i < 8; i++) {
+				chartlist[i].xDomain([ minv, maxv ]);
+				chartlist[i].update();
+
+			}
+			currentMax = maxv;
+			currentMin = minv;
+		}
+
+		function reverse() {
+
+			maxv = currentMax - 86400000;
+			minv = currentMin - 86400000;
+
+			for (var i = 1; i < 8; i++) {
+				chartlist[i].xDomain([ minv, maxv ]);
+				chartlist[i].update();
+
+			}
+			currentMax = maxv;
+			currentMin = minv;
+		}
+	</script>
+	<script type="text/javascript">
+		var isIE = (document.all) ? true : false;
+
+		var $id = function(id) {
+			return "string" == typeof id ? document.getElementById(id) : id;
+		};
+
+		var Class = {
+			create : function() {
+				return function() {
+					this.initialize.apply(this, arguments);
+				}
+			}
+		}
+
+		var Extend = function(destination, source) {
+			for ( var property in source) {
+				destination[property] = source[property];
+			}
+		}
+
+		var Bind = function(object, fun) {
+			return function() {
+				return fun.apply(object, arguments);
+			}
+		}
+
+		var BindAsEventListener = function(object, fun) {
+			var args = Array.prototype.slice.call(arguments).slice(2);
+			return function(event) {
+				return fun
+						.apply(object, [ event || window.event ].concat(args));
+			}
+		}
+
+		var CurrentStyle = function(element) {
+			return element.currentStyle
+					|| document.defaultView.getComputedStyle(element, null);
+		}
+
+		function addEventHandler(oTarget, sEventType, fnHandler) {
+			if (oTarget.addEventListener) {
+				oTarget.addEventListener(sEventType, fnHandler, false);
+			} else if (oTarget.attachEvent) {
+				oTarget.attachEvent("on" + sEventType, fnHandler);
+			} else {
+				oTarget["on" + sEventType] = fnHandler;
+			}
+		};
+
+		function removeEventHandler(oTarget, sEventType, fnHandler) {
+			if (oTarget.removeEventListener) {
+				oTarget.removeEventListener(sEventType, fnHandler, false);
+			} else if (oTarget.detachEvent) {
+				oTarget.detachEvent("on" + sEventType, fnHandler);
+			} else {
+				oTarget["on" + sEventType] = null;
+			}
+		};
+
+		//缩放程序
+		var SimpleResize = Class.create();
+		SimpleResize.prototype = {
+			initialize : function(obj, options) {
+				this._obj = $id(obj);
+
+				this._fR = BindAsEventListener(this, this.Resize);
+				this._fS = Bind(this, this.Stop);
+
+				this._obj.style.position = "absolute";
+			},
+			//设置触发对象
+			Set : function(resize, side) {
+				var resize = $id(resize), fun;
+				if (!resize)
+					return;
+				switch (side.toLowerCase()) {
+				case "up":
+					fun = this.Up;
+					break;
+				case "down":
+					fun = this.Down;
+					break;
+				case "left":
+					fun = this.Left;
+					break;
+				case "right":
+					fun = this.Right;
+					break;
+				case "left-up":
+					fun = this.LeftUp;
+					break;
+				case "right-up":
+					fun = this.RightUp;
+					break;
+				case "left-down":
+					fun = this.LeftDown;
+					break;
+				case "right-down":
+				default:
+					fun = this.RightDown;
+				}
+				;
+				addEventHandler(resize, "mousedown", BindAsEventListener(this,
+						this.Start, fun));
+			},
+			//准备缩放
+			Start : function(e, fun) {
+				this._fun = fun;
+
+				this._styleWidth = this._obj.clientWidth;
+				this._styleHeight = this._obj.clientHeight;
+				this._styleLeft = this._obj.offsetLeft;
+				this._styleTop = this._obj.offsetTop;
+
+				this._sideLeft = e.clientX - this._styleWidth;
+				this._sideRight = e.clientX + this._styleWidth;
+				this._sideUp = e.clientY - this._styleHeight;
+				this._sideDown = e.clientY + this._styleHeight;
+
+				this._fixLeft = this._styleWidth + this._styleLeft;
+				this._fixTop = this._styleHeight + this._styleTop;
+
+				addEventHandler(document, "mousemove", this._fR);
+				addEventHandler(document, "mouseup", this._fS);
+			},
+			//缩放
+			Resize : function(e) {
+				this._fun(e);
+				with (this._obj.style) {
+					width = this._styleWidth + "px";
+					height = this._styleHeight + "px";
+					top = this._styleTop + "px";
+					left = this._styleLeft + "px";
+				}
+				for (var i = 1; i < 8; i++) {
+					chartlist[i].update();
+				}
+			},
+			//缩放程序
+			//上
+			Up : function(e) {
+				this._styleHeight = Math.max(this._sideDown - e.clientY, 0);
+				this._styleTop = this._fixTop - this._styleHeight;
+			},
+			//下
+			Down : function(e) {
+				this._styleHeight = Math.max(e.clientY - this._sideUp, 0);
+			},
+			//右
+			Right : function(e) {
+				this._styleWidth = Math.max(e.clientX - this._sideLeft, 0);
+			},
+			//左
+			Left : function(e) {
+				this._styleWidth = Math.max(this._sideRight - e.clientX, 0);
+				this._styleLeft = this._fixLeft - this._styleWidth;
+			},
+			//右下
+			RightDown : function(e) {
+				this.Right(e);
+				this.Down(e);
+			},
+			//右上
+			RightUp : function(e) {
+				this.Right(e);
+				this.Up(e);
+			},
+			//左下
+			LeftDown : function(e) {
+				this.Left(e);
+				this.Down(e);
+			},
+			//左上
+			LeftUp : function(e) {
+				this.Left(e);
+				this.Up(e);
+			},
+			//停止缩放
+			Stop : function() {
+				removeEventHandler(document, "mousemove", this._fR);
+				removeEventHandler(document, "mouseup", this._fS);
+			}
+		};
+	</script>
+	<script>
+		var rs = new SimpleResize("dragDiv");
+
+		rs.Set("rRightDown", "right-down");
+		rs.Set("rLeftDown", "left-down");
+
+		rs.Set("rRightUp", "right-up");
+		rs.Set("rLeftUp", "left-up");
+
+		rs.Set("rRight", "right");
+		rs.Set("rLeft", "left");
+
+		rs.Set("rUp", "up");
+		rs.Set("rDown", "down");
+	</script>
+</body>
+</html>

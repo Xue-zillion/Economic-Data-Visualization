@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Economic Data Visualization</title>
+</head>
+<body>
+<div id="chart1">
+	<svg
+		style='padding: 0px 0px; height: 600px; overflow-y: scroll; display: block;'>
+	</svg>
+</div>
+</body>
+</html>

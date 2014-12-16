@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>separateTable</title>
+
+<!-- Bootstrap core CSS -->
+<link href="scripts/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link
+	href="scripts/bootstrap/bootstrapdatetimepicker/css/bootstrap-datetimepicker.min.css"
+	rel="stylesheet">
+<link rel="stylesheet"
+	href="http://code.jquery.com/ui/1.9.0/themes/base/jquery-ui.css" />
+<link rel="stylesheet" href="nvd3.css" />
+<script type="text/javascript" src="scripts/nvd3/d3.v3.js"></script>
+<script type="text/javascript" src="scripts/nvd3/nv.d3.js"></script>
+<script type="text/javascript" src="scripts/jquery/jquery.js"></script>
+<script src="http://code.jquery.com/ui/1.9.0/jquery-ui.js"></script>
+<script type="text/javascript" src="scripts/nvd3/d3.v2.js"></script>
+<script type="text/javascript"
+	src="scripts/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript"
+	src="scripts/bootstrap/bootstrapdatetimepicker/js/bootstrap-datetimepicker.min.js"></script>
+<script type="text/javascript">
+	var chart = nv.models.lineChart().margin({left: 80})  //Adjust chart margins to give the x-axis some breathing room.
+		.showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+		.showYAxis(true)        //Show the y-axis
+		.showXAxis(true)        //Show the x-axis
+		//.useInteractiveGuideline(true)
+		;
+    var starttime=null,endtime=null;
+    var alljson,so2json,n02json,cojson,o3json,pm10json,pm25json;
+	function myData(starttime,endtime) {
+		
+		var so2data = [],
+		    n02data = [],
+		    codata = [],
+		    o3data = [],
+		    pm10data = [],
+		    pm25data = [];
+		$(document).ready(function() {
+			$.ajaxSetup({
+				contentType : "application/json"
+			});
+			
+			/*
+			$("#datetimepicker1 input").on('change',function(){
+			    alert('Change Happened');
+			});
+			$("#date2").on('input',function(){
+			    alert('Change Happened');
+			});
+			*/
+		starttime=$("#date1").val();
+		endtime=$("#date2").val();
+		
+		$("#redraw").click(function(){
+			starttime=$("#date1").val();
+			endtime=$("#date2").val();
+			if(starttime==""&&endtime==""){
+		    	alert('请输入开始日期和截止日期');
+		    	return;
+		    }else if(starttime==""){
+		    	alert('请输入开始日期');
+		    	return;
+		    }else if(endtime==""){
+		    	alert('请输入截止日期');
+		    	return;
+		    }
+			 myData(starttime,endtime);
+			for(var i=1;i<=7;i++){
+				document.getElementById('chart'+i).innerHTML="<svg style='padding: 0px 0px; height: 600px; overflow-y: scroll; display: block;'></svg>"; 
+			}
+			
+	     addGraph(chart,'#chart1 svg',alljson);
+	     addGraph(chart,'#chart2 svg',so2json);
+	     addGraph(chart,'#chart3 svg',n02json);
+	     addGraph(chart,'#chart4 svg',cojson);
+	     addGraph(chart,'#chart5 svg',o3json);
+	     addGraph(chart,'#chart6 svg',pm10json);
+	     addGraph(chart,'#chart7 svg',pm25json);
+			});
+			
+		$.ajax({
+				type : "GET",
+				url : "webresources/myresource/testdata",
+				async: false,    //run synchronously, the program will have to wait until success after running statement to complete and return the results to continue executing the next statement
+				success : function(data) {
+					$(data).each(function(index, value) {
+						if(starttime==""&&endtime==""){
+						var date = new Date(parseInt(value[0]),parseInt(value[1])-1,Number(value[2])).getTime();//change the date from Date to integer,if not,the tooltips on the chart do not pop up on hovering it
+						so2data.push({
+							x: date, 
+							y: parseFloat(value[3])
+							});
+						n02data.push({
+							x: date, 
+							y: parseFloat(value[4])
+							});
+						codata.push({
+							x: date, 
+							y: parseFloat(value[5])
+							});
+						o3data.push({
+							x: date, 
+							y: parseFloat(value[6])
+							});
+						pm10data.push({
+							x: date, 
+							y: parseFloat(value[7])
+							});
+						pm25data.push({
+							x: date, 
+							y: parseFloat(value[8])
+							});
+                        //get the value to add to the select(select year)
+					    /*var selObj = document.getElementById("selectYear");
+					    var Option = document.createElement("OPTION");
+					    Option.value = "value";
+					    Option.text = value[0];
+					    if(option.text==Option.text){
+					    }else{
+						    selObj.options.add(Option);
+					    }
+					    option=Option;*/
+					    
+						}else{
+							//if(Number(starttime.split(' ')[0].split('/')[0])<=Number(value[0])&&Number(starttime.split(' ')[0].split('/')[1])<=Number(value[1])&&Number(starttime.split(' ')[0].split('/')[2])<=Number(value[2])){
+						var datestart = new Date(Number(starttime.split(' ')[0].split('/')[0]),Number(starttime.split(' ')[0].split('/')[1])-1,Number(starttime.split(' ')[0].split('/')[2])).getTime();
+						var dateend = new Date(Number(endtime.split(' ')[0].split('/')[0]),Number(endtime.split(' ')[0].split('/')[1])-1,Number(endtime.split(' ')[0].split('/')[2])).getTime();
+						var date = new Date(Number(value[0]),Number(value[1])-1,Number(value[2])).getTime();
+						if(date>=datestart&&date<=dateend){
+						so2data.push({
+							x: date, 
+							y: parseFloat(value[3])
+							});
+						n02data.push({
+							x: date, 
+							y: parseFloat(value[4])
+							});
+						codata.push({
+							x: date, 
+							y: parseFloat(value[5])
+							});
+						o3data.push({
+							x: date, 
+							y: parseFloat(value[6])
+							});
+						pm10data.push({
+							x: date, 
+							y: parseFloat(value[7])
+							});
+						pm25data.push({
+							x: date, 
+							y: parseFloat(value[8])
+							});	
+							}else{
+								
+							}
+							
+						}
+							
+					});
+				},
+				dataType : "json"
+			});
+
+		});
+		
+		alljson= [
+			        {
+			            key: "SO2",
+			            values: so2data,
+			            color: "#FFC0CB"
+			        },
+			        {
+			            key: "NO2",
+			            values: n02data,
+			            color: "#FF83FA"
+			        },
+			        {
+			            key: "CO",
+			            values: codata,
+			            color: "#CAFF70"
+			        },
+			        {
+			            key: "O3",
+			            values: o3data,
+			            color: "#9B30FF"
+			        },
+			        {
+			            key: "PM10",
+			            values: pm10data,
+			            color: "#7CFC00"
+			        },
+			        {
+			            key: "PM2.5",
+			            values: pm25data,
+			            color: "#0000FF"
+			        }
+			    ];
+			    so2json=[
+				        {
+				            key: "SO2",
+				            values: so2data,
+				            color: "#FFC0CB"
+				        }
+				];
+			    n02json=[
+			             {
+			            key: "NO2",
+			            values: n02data,
+			            color: "#FF83FA"
+			            }
+			           ];
+			    cojson=[
+			            {
+			            key: "CO",
+			            values: codata,
+			            color: "#CAFF70"
+			        }];
+			    o3json=[
+			            {
+		            key: "O3",
+		            values: o3data,
+		            color: "#9B30FF"
+		        }];
+			    pm10json=[
+			              {
+		            key: "PM10",
+		            values: pm10data,
+		            color: "#7CFC00"
+		        }];
+			    pm25json=[
+			              {
+		            key: "PM2.5",
+		            values: pm25data,
+		            color: "#0000FF"
+		        }];
+	}
+	
+	     myData(starttime,endtime);
+	     addGraph(chart,'#chart1 svg',alljson);
+	     addGraph(chart,'#chart2 svg',so2json);
+	     addGraph(chart,'#chart3 svg',n02json);
+	     addGraph(chart,'#chart4 svg',cojson);
+	     addGraph(chart,'#chart5 svg',o3json);
+	     addGraph(chart,'#chart6 svg',pm10json);
+	     addGraph(chart,'#chart7 svg',pm25json);
+	     
+	     function  addGraph(chart,svg,data){
+     		nv.addGraph(function() {
+    		    chart.xAxis.axisLabel("日期(年/月/日)").tickFormat(function (d) {
+    		        return d3.time.format("%y/%m/%d")(new Date(d))
+    		    });
+    		    chart.yAxis
+    		        .axisLabel("记录值")
+    		        .tickFormat(d3.format('.02f'))
+    		        .showMaxMin(true)
+    		        ;
+    		    d3.select(svg)
+    		        .datum(data)
+    		        .transition().duration(500).call(chart);
+    	
+    		    nv.utils.windowResize(chart.update); 
+    		    return chart;
+    		});
+         }
+
+		function selectStyle()
+		{
+			var obj=document.getElementById('selectStyle');
+			var index=obj.selectedIndex; 
+			var val = obj.options[index].text;
+			switch(val)
+			{
+			case '折线图':
+			chart = nv.models.lineChart().margin({left: 80})  //Adjust chart margins to give the x-axis some breathing room.
+				.showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+			    .showYAxis(true)        //Show the y-axis
+			    .showXAxis(true)        //Show the x-axis
+			    //.useInteractiveGuideline(true);
+			  break;
+			case '堆积面积图':
+			chart = nv.models.stackedAreaChart().margin({left: 80})  //Adjust chart margins to give the x-axis some breathing room.
+			    .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+			    //.useInteractiveGuideline(true)
+			    ;
+			  break;
+			case '堆叠条形图':
+			chart = nv.models.multiBarChart().margin({left: 80});
+			break;
+			default:
+			}
+			//var obj1=document.getElementById('selectYear');
+			//var index1=obj1.selectedIndex; 
+			//var val1 = obj1.options[index1].text;
+			//document.getElementById('chart1').innerHTML="<svg style='padding:100px 0px;height:600px;overflow-y:scroll;display: block;'></svg>"; 
+			//addGraph(chart);
+		}
+		
+		/*function selectYear(){
+			var obj=document.getElementById('selectYear');
+			var index=obj.selectedIndex; 
+			var val = obj.options[index].text;
+			addGraph(linechart,val);
+		}*/
+
+		
+		
+</script>
+
+</head>
+<body>
+	<h1 align="center">T_AIR_MONTH_AVG_DATA</h1>
+	<!-- <div> 
+	    <span style="float:left">CHOOSE YEAR</span>
+	    <select onchange="selectYear()" id="selectYear" style='width:100px;float:left'>
+		   <option>allyear</option>
+	    </select>
+	</div> 
+	 -->
+	<div class="well" style="height: 60px;">
+		<div id="datetimepicker1" class="input-append date"
+			style="margin-right: 20px;; float: left;">
+			<label>起始日期</label> <input data-format="yyyy/MM/dd hh:mm:ss"
+				id="date1" type="text"></input> <span class="add-on"> <span
+				class="glyphicon glyphicon-calendar" data-time-icon="icon-time"
+				data-date-icon="icon-calendar" style="cursor: pointer"></span>
+			</span>
+		</div>
+		<div id="datetimepicker2" class="input-append date"
+			style="margin-right: 20px;; float: left;">
+			<label>截止日期</label> <input data-format="yyyy/MM/dd hh:mm:ss"
+				id="date2" type="text"></input> <span class="add-on"> <span
+				class="glyphicon glyphicon-calendar" data-time-icon="icon-time"
+				data-date-icon="icon-calendar" style="cursor: pointer"></span>
+			</span>
+		</div>
+
+		<div>
+			<label style="float: left">选择显示样式</label> <select
+				onchange="selectStyle()" id="selectStyle"
+				style='margin-right: 20px;; float: left'>
+				<option>折线图</option>
+				<option>堆积面积图</option>
+				<option>堆叠条形图</option>
+			</select>
+		</div>
+		<a class="btn btn-success" id="redraw" role="button">重画</a>
+	</div>
+
+
+	<script type="text/javascript">
+	$(function() {
+	    $('#datetimepicker1').datetimepicker({
+	      pickTime: false
+	    });
+	    
+	    $('#datetimepicker2').datetimepicker({
+	      pickTime: false
+	    });
+	    
+	  });
+	</script>
+	<div>
+		<button id="play" onclick="play()">play</button>
+		<button id="play" onclick="reverse()">reverse</button>
+	</div>
+
+	<div id="chart1" class='with-transitions'>
+		<svg
+			style='padding: 0px 0px; height: 600px; overflow-y: scroll; display: block;'>
+		</svg>
+	</div>
+	<div id="chart2" class='with-transitions'>
+		<svg
+			style='padding: 0px 0px; height: 600px; overflow-y: scroll; display: block;'>
+		</svg>
+	</div>
+
+	<div id="chart3" class='with-transitions'>
+		<svg
+			style='padding: 0px 0px; height: 600px; overflow-y: scroll; display: block;'>
+		</svg>
+	</div>
+
+	<div id="chart4" class='with-transitions'>
+		<svg
+			style='padding: 0px 0px; height: 600px; overflow-y: scroll; display: block;'>
+		</svg>
+	</div>
+
+	<div id="chart5" class='with-transitions'>
+		<svg
+			style='padding: 0px 0px; height: 600px; overflow-y: scroll; display: block;'>
+		</svg>
+	</div>
+
+	<div id="chart6" class='with-transitions'>
+		<svg
+			style='padding: 0px 0px; height: 600px; overflow-y: scroll; display: block;'>
+		</svg>
+	</div>
+
+	<div id="chart7" class='with-transitions'>
+		<svg
+			style='padding: 0px 0px; height: 600px; overflow-y: scroll; display: block;'>
+		</svg>
+	</div>
+</body>
+</html>

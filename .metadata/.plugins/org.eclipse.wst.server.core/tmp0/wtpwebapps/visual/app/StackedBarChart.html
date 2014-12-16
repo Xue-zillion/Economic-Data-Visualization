@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>StackedBarChart</title>
+
+<link href="http://cdn.bootcss.com/nvd3/1.1.15-beta/nv.d3.css" rel="stylesheet">
+<script type="text/javascript" src="scripts/nvd3/d3.v3.js"></script>
+<script type="text/javascript" src="scripts/nvd3/nv.d3.js"></script>
+<script type="text/javascript" src="scripts/jquery/jquery.js"></script>
+
+</head>
+<body>
+  <div id="chartZoom">
+    <a href="#" id="zoomIn">Zoom In</a> <a href="#" id="zoomOut">Zoom Out</a>
+  </div>
+  <div id="chart1" class='with-transitions'>
+    <svg style='padding:100px 0px;height:600px;overflow-y:scroll;display: block;'></svg>
+  </div>
+<script type="text/javascript">
+   
+	function myData() {
+		var so2data = [],
+		    n02data = [],
+		    codata = [],
+		    o3data = [],
+		    pm10data = [],
+		    pm25data = [];
+		$(document).ready(function() {
+			$.ajaxSetup({
+				contentType : "application/json"
+			});
+
+			$.ajax({
+				type : "GET",
+				url : "webresources/myresource/testdata",
+				async: false,    //run synchronously, the program will have to wait until success after running statement to complete and return the results to continue executing the next statement
+				success : function(data) {
+					$(data).each(function(index, value) {
+						var date = new Date(parseInt(value[0]),parseInt(value[1])-1,1).getTime();//change the date from Date to integer,if not,the tooltips on the chart do not pop up on hovering it
+						so2data.push({
+							x: date, 
+							y: parseFloat(value[3])
+							});
+						n02data.push({
+							x: date, 
+							y: parseFloat(value[4])
+							});
+						codata.push({
+							x: date, 
+							y: parseFloat(value[5])
+							});
+						o3data.push({
+							x: date, 
+							y: parseFloat(value[6])
+							});
+						pm10data.push({
+							x: date, 
+							y: parseFloat(value[7])
+							});
+						pm25data.push({
+							x: date, 
+							y: parseFloat(value[8])
+							});
+					});
+				},
+				dataType : "json"
+			});
+
+		});
+		
+	    return [
+	        {
+	            key: "SO2",
+	            values: so2data,
+	            color: "#FFC0CB"
+	        },
+	        {
+	            key: "NO2",
+	            values: n02data,
+	            color: "#FF83FA"
+	        },
+	        {
+	            key: "CO",
+	            values: codata,
+	            color: "#CAFF70"
+	        },
+	        {
+	            key: "O3",
+	            values: o3data,
+	            color: "#9B30FF"
+	        },
+	        {
+	            key: "PM10",
+	            values: pm10data,
+	            color: "#7CFC00"
+	        },
+	        {
+	            key: "PM2.5",
+	            values: pm25data,
+	            color: "#0000FF"
+	        }
+	    ];
+	}
+
+		nv.addGraph(function() {
+			var chart = nv.models.multiBarChart();
+		    var fitScreen = false;
+		    var width = 1000;
+		    var height = 400;
+		    var zoom = 1;
+		    
+		    chart.xAxis.axisLabel("Date (y/m)").tickFormat(function (d) {
+		        return d3.time.format("%y/%m")(new Date(d))
+		    });
+		    chart.yAxis
+		        .axisLabel("Content")
+		        .tickFormat(d3.format('.02f'))
+		        .showMaxMin(true)
+		        ;
+		    d3.select('#chart1 svg')
+		        .datum(myData())
+		        .transition().duration(500).call(chart);
+	
+		    setChartViewBox();
+		    resizeChart();
+		    
+		    nv.utils.windowResize(resizeChart);
+
+		    d3.select('#zoomIn').on('click', zoomIn);
+		    d3.select('#zoomOut').on('click', zoomOut);
+
+
+		    function setChartViewBox() {
+		      var w = width * zoom,
+		          h = height * zoom;
+
+		      chart
+		          .width(w)
+		          .height(h);
+
+		      d3.select('#chart1 svg')
+		          .attr('viewBox', '0 0 ' + w + ' ' + h)
+		        .transition().duration(500)
+		          .call(chart);
+		    }
+
+		    function zoomOut() {
+		      zoom += .25;
+		      setChartViewBox();
+		    }
+
+		    function zoomIn() {
+		      if (zoom <= .5) return;
+		      zoom -= .25;
+		      setChartViewBox();
+		    }
+
+		    // This resize simply sets the SVG's dimensions, without a need to recall the chart code
+		    // Resizing because of the viewbox and perserveAspectRatio settings
+		    // This scales the interior of the chart unlike the above
+		    function resizeChart() {
+		      var container = d3.select('#chart1');
+		      var svg = container.select('svg');
+
+		      if (fitScreen) {
+		        // resize based on container's width AND HEIGHT
+		        var windowSize = nv.utils.windowSize();
+		        svg.attr("width", windowSize.width);
+		        svg.attr("height", windowSize.height);
+		      } else {
+		        // resize based on container's width
+		        var aspect = chart.width() / chart.height();
+		        var targetWidth = parseInt(container.style('width'));
+		        svg.attr("width", targetWidth);
+		        svg.attr("height", Math.round(targetWidth / aspect));
+		      }
+		    };
+		    
+		    return chart;
+		});
+</script>
+</body>
+</html>

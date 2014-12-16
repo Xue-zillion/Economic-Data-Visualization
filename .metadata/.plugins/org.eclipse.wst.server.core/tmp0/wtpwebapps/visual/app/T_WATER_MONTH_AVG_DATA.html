@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>月均值表</title>
+
+<!-- Bootstrap core CSS -->
+<link href="scripts/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link
+	href="scripts/bootstrap/bootstrapdatetimepicker/css/bootstrap-datetimepicker.min.css"
+	rel="stylesheet">
+<link rel="stylesheet"
+	href="http://code.jquery.com/ui/1.9.0/themes/base/jquery-ui.css" />
+<link rel="stylesheet" href="nvd3.css" />
+<script type="text/javascript" src="scripts/nvd3/d3.v3.js"></script>
+<script type="text/javascript" src="scripts/nvd3/nv.d3.js"></script>
+<script type="text/javascript" src="scripts/jquery/jquery.js"></script>
+<script src="http://code.jquery.com/ui/1.9.0/jquery-ui.js"></script>
+<script type="text/javascript" src="scripts/nvd3/d3.v2.js"></script>
+<script type="text/javascript"
+	src="scripts/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript"
+	src="scripts/bootstrap/bootstrapdatetimepicker/js/bootstrap-datetimepicker.min.js"></script>
+<style type="text/css">
+#rRightDown, #rLeftDown, #rLeftUp, #rRightUp, #rRight, #rLeft, #rUp,
+	#rDown {
+	position: absolute;
+	background: #C00;
+	width: 7px;
+	height: 7px;
+	z-index: 5;
+	font-size: 0;
+}
+
+#rLeftDown, #rRightUp {
+	cursor: ne-resize;
+}
+
+#rRightDown, #rLeftUp {
+	cursor: nw-resize;
+}
+
+#rRight, #rLeft {
+	cursor: e-resize;
+}
+
+#rUp, #rDown {
+	cursor: n-resize;
+}
+
+#rLeftDown {
+	left: -4px;
+	bottom: -4px;
+}
+
+#rRightUp {
+	right: -4px;
+	top: -4px;
+}
+
+#rRightDown {
+	right: -4px;
+	bottom: -4px;
+	background-color: #00F;
+}
+
+#rLeftUp {
+	left: -4px;
+	top: -4px;
+}
+
+#rRight {
+	right: -4px;
+	top: 50%;
+	margin-top: -4px;
+}
+
+#rLeft {
+	left: -4px;
+	top: 50%;
+	margin-top: -4px;
+}
+
+#rUp {
+	top: -4px;
+	left: 50%;
+	margin-left: -4px;
+}
+
+#rDown {
+	bottom: -4px;
+	left: 50%;
+	margin-left: -4px;
+}
+
+#dragDiv {
+	border-left: 2px dashed #0F0;
+	border-right: 2px dashed #0F0;
+	top: 180px;
+	left: 100px;
+	right: 100px;
+	width: 90%;
+}
+
+#tool {
+	display: block;
+	bottom: -20px;
+	left: 0px;
+	right: 100px;
+	width: 100%;
+	height: 10px;
+	position: fixed;
+	text-align: center;
+}
+</style>
+<script type="text/javascript">
+	var chartlist = [];
+	var listvalue = "折线图";
+	var startdate, enddate;
+	var starttime = null, endtime = null;
+	var json1, json2, json3, json4;
+	function myData(starttime, endtime) {
+		var data1_1 = [], data1_2 = [], data1_3 = [], data1_4 = [], data1_5 = [], data1_6 = [], data1_7 = [], data1_8 = [], data1_9 = [], data1_10 = [], data1_11 = [], data1_12 = [], data2_1 = [], data2_2 = [], data2_3 = [], data2_4 = [], data2_5 = [], data2_6 = [], data2_7 = [], data2_8 = [], data2_9 = [], data2_10 = [], data2_11 = [], data2_12 = [], data3_1 = [], data3_2 = [], data3_3 = [], data3_4 = [], data3_5 = [], data3_6 = [], data3_7 = [], data3_8 = [], data3_9 = [], data3_10 = [], data3_11 = [], data3_12 = [], data4_1 = [], data4_2 = [], data4_3 = [], data4_4 = [], data4_5 = [], data4_6 = [], data4_7 = [], data4_8 = [], data4_9 = [], data4_10 = [], data4_11 = [], data4_12 = [];
+		$(document)
+				.ready(
+						function() {
+							$.ajaxSetup({
+								contentType : "application/json"
+							});
+
+							/*
+							$("#datetimepicker1 input").on('change',function(){
+							    alert('Change Happened');
+							})
+							$("#date2").on('input',function(){
+							    alert('Change Happened');
+							});
+							 */
+							starttime = $("#date1").val();
+							endtime = $("#date2").val();
+							$("#redraw")
+									.click(
+											function() {
+												starttime = $("#date1").val();
+												endtime = $("#date2").val();
+												/* if (starttime == ""
+														&& endtime == "") {
+													alert('请输入开始日期和截止日期');
+													return;
+												} else if (starttime == "") {
+													alert('请输入开始日期');
+													return;
+												} else if (endtime == "") {
+													alert('请输入截止日期');
+													return;
+												} */
+
+												myData(starttime, endtime);
+												var datalist = [ json1, json2,
+														json3, json4 ];
+												var namelist = [ "D泵站 ", "污水厂进水口",
+																	"污水厂出水口 ", "蓟运河故道示范段 "];
+												for (var i = 1; i < 5; i++) {
+													var div = document
+															.getElementById('chart'
+																	+ i);
+													div.style.width = "100%";
+													div.style.styleFloat = "";
+													div.value = "aaaa";
+
+													document
+															.getElementById('chart'
+																	+ i).innerHTML = namelist[i-1]+"<svg style='padding: 0 5%; height: 150px; overflow-y: scroll; display: block;'></svg>";
+																	div.text = "aaaa";
+													addGraph('#chart' + i
+															+ ' svg',
+															datalist[i - 1], i);
+												}
+											});
+							/* var param = {};
+							param.time = starttime + "," + endtime; */
+							$.ajax({
+										type : "GET",
+										url : "webresources/myresource/testdata9",
+										async : false, //run synchronously, the program will have to wait until success after running statement to complete and return the results to continue executing the next statement
+										//data : param,
+										success : function(data) {
+
+											startdate = new Date(
+													parseInt(data[0][0]),
+													parseInt(data[0][1]) - 1,
+													Number(data[0][2]))
+													.getTime();
+											enddate = new Date(
+													parseInt(data[data.length - 1][0]),
+													parseInt(data[data.length - 1][1]) - 1,
+													Number(data[data.length - 1][2]))
+													.getTime();
+
+											$(data).each(
+															function(index,
+																	value) {
+																if (starttime == ""
+																		&& endtime == "") {
+																	var date = new Date(
+																			parseInt(value[0]),
+																			parseInt(value[1]) - 1,
+																			Number(value[2]))
+																			.getTime();//change the date from Date to integer,if not,the tooltips on the chart do not pop up on hovering it
+																	switch (value[4]) {
+																	case '100000117':
+																		switch (value[5]) {
+																		case "001":
+																			data1_1
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "003":
+																			data1_2
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "011":
+																			data1_3
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "015":
+																			data1_4
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "060":
+																			data1_5
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "301":
+																			data1_6
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "309":
+																			data1_7
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "313":
+																			data1_8
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "B01":
+																			data1_9
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "Cond":
+																			data1_10
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "DO":
+																			data1_11
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "Trb":
+																			data1_12
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		default:
+																			break;
+																		}
+
+																		break;
+																	case '10000001':
+																		switch (value[5]) {
+																		case "001":
+																			data2_1
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "003":
+																			data2_2
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "011":
+																			data2_3
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "015":
+																			data2_4
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "060":
+																			data2_5
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "301":
+																			data2_6
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "309":
+																			data2_7
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "313":
+																			data2_8
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "B01":
+																			data2_9
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "Cond":
+																			data2_10
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "DO":
+																			data2_11
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "Trb":
+																			data2_12
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		default:
+																			break;
+																		}
+																		break;
+																	case '10000002':
+																		switch (value[5]) {
+																		case "001":
+																			data3_1
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "003":
+																			data3_2
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "011":
+																			data3_3
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "015":
+																			data3_4
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "060":
+																			data3_5
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "301":
+																			data3_6
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "309":
+																			data3_7
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "313":
+																			data3_8
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "B01":
+																			data3_9
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "Cond":
+																			data3_10
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "DO":
+																			data3_11
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "Trb":
+																			data3_12
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		default:
+																			break;
+																		}
+																		break;
+																	case '100000022':
+																		switch (value[5]) {
+																		case "001":
+																			data4_1
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "003":
+																			data4_2
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "011":
+																			data4_3
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "015":
+																			data4_4
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "060":
+																			data4_5
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "301":
+																			data4_6
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "309":
+																			data4_7
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "313":
+																			data4_8
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "B01":
+																			data4_9
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "Cond":
+																			data4_10
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "DO":
+																			data4_11
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		case "Trb":
+																			data4_12
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			break;
+																		default:
+																			break;
+																		}
+																		break;
+																	default:
+																		break;
+																	}
+
+																} else {
+																	//if(Number(starttime.split(' ')[0].split('/')[0])<=Number(value[0])&&Number(starttime.split(' ')[0].split('/')[1])<=Number(value[1])&&Number(starttime.split(' ')[0].split('/')[2])<=Number(value[2])){
+																	var datestart = new Date(
+																			Number(starttime
+																					.split(' ')[0]
+																					.split('/')[0]),
+																			Number(starttime
+																					.split(' ')[0]
+																					.split('/')[1]) - 1,
+																			Number(starttime
+																					.split(' ')[0]
+																					.split('/')[2]))
+																			.getTime();
+																	var dateend = new Date(
+																			Number(endtime
+																					.split(' ')[0]
+																					.split('/')[0]),
+																			Number(endtime
+																					.split(' ')[0]
+																					.split('/')[1]) - 1,
+																			Number(endtime
+																					.split(' ')[0]
+																					.split('/')[2]))
+																			.getTime();
+																	var date = new Date(
+																			Number(value[0]),
+																			Number(value[1]) - 1,
+																			Number(value[2]))
+																			.getTime();
+																	startdate = (startdate < datestart) ? datestart
+																			: startdate;
+																	enddate = (enddate > dateend) ? dateend
+																			: enddate;
+																	if (date >= datestart
+																			&& date <= dateend) {
+																		switch (value[4]) {
+																		case '100000117':
+																			switch (value[5]) {
+																			case "001":
+																				data1_1
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "003":
+																				data1_2
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "011":
+																				data1_3
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "015":
+																				data1_4
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "060":
+																				data1_5
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "301":
+																				data1_6
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "309":
+																				data1_7
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "313":
+																				data1_8
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "B01":
+																				data1_9
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "Cond":
+																				data1_10
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "DO":
+																				data1_11
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "Trb":
+																				data1_12
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			default:
+																				break;
+																			}
+
+																			break;
+																		case '10000001':
+																			switch (value[5]) {
+																			case "001":
+																				data2_1
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "003":
+																				data2_2
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "011":
+																				data2_3
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "015":
+																				data2_4
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "060":
+																				data2_5
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "301":
+																				data2_6
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "309":
+																				data2_7
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "313":
+																				data2_8
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "B01":
+																				data2_9
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "Cond":
+																				data2_10
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "DO":
+																				data2_11
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "Trb":
+																				data2_12
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			default:
+																				break;
+																			}
+																			break;
+																		case '10000002':
+																			switch (value[5]) {
+																			case "001":
+																				data3_1
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "003":
+																				data3_2
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "011":
+																				data3_3
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "015":
+																				data3_4
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "060":
+																				data3_5
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "301":
+																				data3_6
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "309":
+																				data3_7
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "313":
+																				data3_8
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "B01":
+																				data3_9
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "Cond":
+																				data3_10
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "DO":
+																				data3_11
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "Trb":
+																				data3_12
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			default:
+																				break;
+																			}
+																			break;
+																		case '100000022':
+																			switch (value[5]) {
+																			case "001":
+																				data4_1
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "003":
+																				data4_2
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "011":
+																				data4_3
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "015":
+																				data4_4
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "060":
+																				data4_5
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "301":
+																				data4_6
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "309":
+																				data4_7
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "313":
+																				data4_8
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "B01":
+																				data4_9
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "Cond":
+																				data4_10
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "DO":
+																				data4_11
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			case "Trb":
+																				data4_12
+																						.push({
+																							x : date,
+																							y : parseFloat(value[3])
+																						});
+																				break;
+																			default:
+																				break;
+																			}
+																			break;
+																		default:
+																			break;
+																		}
+																	} else {
+
+																	}
+
+																}
+
+															});
+										},
+										dataType : "json"
+									});
+
+						});
+
+		json1 = [ {
+			key : "pH值",
+			values : data1_1,
+			color : "#FFC0CB"
+		}, {
+			key : "悬浮物",
+			values : data1_2,
+			color : "#FF83FA"
+		}, {
+			key : "化学需氧量",
+			values : data1_3,
+			color : "#CAFF70"
+		}, {
+			key : "总有机碳",
+			values : data1_4,
+			color : "#9B30FF"
+		}, {
+			key : "氨氮",
+			values : data1_5,
+			color : "#7CFC00"
+		}, {
+			key : "总磷",
+			values : data1_8,
+			color : "#D1EEEE"
+		}, {
+			key : "流量",
+			values : data1_9,
+			color : "#DEB887"
+		} ];
+		json2 = [ {
+			key : "pH值",
+			values : data2_1,
+			color : "#FFC0CB"
+		}, {
+			key : "悬浮物",
+			values : data2_2,
+			color : "#FF83FA"
+		}, {
+			key : "化学需氧量",
+			values : data2_3,
+			color : "#CAFF70"
+		}, {
+			key : "总有机碳",
+			values : data2_4,
+			color : "#9B30FF"
+		}, {
+			key : "氨氮",
+			values : data2_5,
+			color : "#7CFC00"
+		},
+
+		{
+			key : "总磷",
+			values : data2_8,
+			color : "#D1EEEE"
+		}, {
+			key : "流量",
+			values : data2_9,
+			color : "#DEB887"
+		} ];
+		json3 = [ {
+			key : "pH值",
+			values : data3_1,
+			color : "#FFC0CB"
+		}, {
+			key : "悬浮物",
+			values : data3_2,
+			color : "#FF83FA"
+		}, {
+			key : "化学需氧量",
+			values : data3_3,
+			color : "#CAFF70"
+		}, {
+			key : "总有机碳",
+			values : data3_4,
+			color : "#9B30FF"
+		}, {
+			key : "氨氮",
+			values : data3_5,
+			color : "#7CFC00"
+		},
+
+		{
+			key : "总磷",
+			values : data3_8,
+			color : "#D1EEEE"
+		}, {
+			key : "流量",
+			values : data3_9,
+			color : "#DEB887"
+		} ];
+		json4 = [ {
+			key : "pH值",
+			values : data4_1,
+			color : "#FFC0CB"
+		}, {
+			key : "化学需氧量",
+			values : data4_3,
+			color : "#CAFF70"
+		}, {
+			key : "总有机碳",
+			values : data4_4,
+			color : "#9B30FF"
+		}, {
+			key : "氨氮",
+			values : data4_5,
+			color : "#7CFC00"
+		}, {
+			key : "水温",
+			values : data4_6,
+			color : "#EE7AE9"
+		}, {
+			key : "硝酸盐",
+			values : data4_7,
+			color : "#DDA0DD"
+		}, {
+			key : "电导率",
+			values : data4_10,
+			color : "#CDAD00"
+		}, {
+			key : "溶解氧",
+			values : data4_11,
+			color : "#CD5C5C"
+		}, {
+			key : "浊度",
+			values : data4_12,
+			color : "#CDC9A5"
+		} ];
+	}
+
+	myData(starttime, endtime);
+	var datainit = [ json1, json2, json3, json4 ];
+	for (var i = 1; i < 5; i++) {
+		addGraph('#chart' + i + ' svg', datainit[i - 1], i);
+	}
+
+	function addGraph(svg, data, i) {
+
+		nv.addGraph(function() {
+
+			if (listvalue == "折线图") {
+				var chart = nv.models.lineChart().margin({
+					top : 0,
+					right : 20,
+					bottom : 25,
+					left : 20
+				}).showLegend(true).showYAxis(true).showXAxis(true)
+						.useInteractiveGuideline(true);
+				chartlist[i] = chart;
+			} else if (listvalue == "堆叠条形图") {
+				var chart = nv.models.multiBarChart().margin({
+					top : 0,
+					right : 20,
+					bottom : 25,
+					left : 20
+				});
+				chartlist[i] = chart;
+			} else if (listvalue == "堆积面积图") {
+				var chart = nv.models.stackedAreaChart().margin({
+					top : 0,
+					right : 20,
+					bottom : 25,
+					left : 20
+				}).showLegend(true).useInteractiveGuideline(true);
+				chartlist[i] = chart;
+			} else if (listvalue == "数据过滤图") {
+				var chart = nv.models.lineWithFocusChart().showLegend(true);
+				chart.x2Axis
+				//.axisLabel("日期(年/月/日)")
+				.tickFormat(function(d) {
+					return d3.time.format("%Y/%m/%d")(new Date(d))
+				});
+				chart.y2Axis
+				//.axisLabel("记录值")
+				.tickFormat(d3.format('.03f')).showMaxMin(true);
+				chartlist[i] = chart;
+			}
+
+			chart.xAxis
+			//.axisLabel("日期(年/月/日)")
+			.tickFormat(function(d) {
+				return d3.time.format("%y/%m/%d")(new Date(d))
+			});
+
+			chart.yAxis
+			//.axisLabel("记录值")
+			.tickFormat(d3.format('.03f')).showMaxMin(true);
+
+			d3.select(svg).datum(data).transition().duration(400).call(chart);
+			nv.utils.windowResize(chart.update);
+			return chart;
+		});
+	}
+
+	function selectStyle() {
+		var obj = document.getElementById('selectStyle');
+		var index = obj.selectedIndex;
+		var val = obj.options[index].text;
+		listvalue = val;
+
+	}
+</script>
+
+</head>
+<body>
+	<h1 align="center" style="margin-top: 20px; margin-bottom: 30px">月均值表</h1>
+	<!-- <div> 
+	    <span style="float:left">CHOOSE YEAR</span>
+	    <select onchange="selectYear()" id="selectYear" style='width:100px;float:left'>
+		   <option>allyear</option>
+	    </select>
+	</div> 
+	 -->
+	<div class="well" style="height: 60px;">
+		<div id="datetimepicker1" class="input-append date"
+			style="margin-right: 20px; margin-left: 120px; float: left;">
+			<label>起始日期</label> <input data-format="yyyy/MM/dd hh:mm:ss"
+				id="date1" type="text" ></input> <span
+				class="add-on"> <span class="glyphicon glyphicon-calendar"
+				data-time-icon="icon-time" data-date-icon="icon-calendar"
+				style="cursor: pointer"></span>
+			</span>
+		</div>
+		<div id="datetimepicker2" class="input-append date"
+			style="margin-right: 20px;; float: left;">
+			<label>截止日期</label> <input data-format="yyyy/MM/dd hh:mm:ss"
+				id="date2" type="text" ></input> <span
+				class="add-on"> <span class="glyphicon glyphicon-calendar"
+				data-time-icon="icon-time" data-date-icon="icon-calendar"
+				style="cursor: pointer"></span>
+			</span>
+		</div>
+
+		<div>
+			<label style="float: left">选择显示样式</label> <select
+				onchange="selectStyle()" id="selectStyle"
+				style='margin-right: 20px; float: left'>
+				<option>折线图</option>
+				<option>数据过滤图</option>
+				<option>堆叠条形图</option>
+				<option>堆积面积图</option>
+			</select>
+		</div>
+		<a class="btn btn-success" id="redraw" role="button"
+			style="padding: 10px 15px">重画</a> <label style="margin-left: 300px">其他表:</label>
+
+		<a href="http://localhost:8080/visual/app/T_WATER_DAY_AVG_DATA.html"
+			target="_blank" style="margin-left: 0px;">日均值表</a> <a
+
+			href="http://localhost:8080/visual/app/T_AIR_MONTH_AVG_DATA.html"
+			target="_blank" style="margin-left: 10px;">月均值表</a> <a
+			href="http://localhost:8080/visual/app/T_AIR_YEAR_AVG_DATA.html"
+			target="_blank" style="margin-left: 10px;">年均值表</a> <a
+			href="http://localhost:8080/visual/app/T_AIR_API_MONTH_STATS.html"
+			target="_blank" style="margin-left: 10px;">月API等级天数表</a> <a
+			href="http://localhost:8080/visual/app/T_AIR_AQI_MONTH_STATS.html"
+			target="_blank" style="margin-left: 10px;">月AQI等级天数表</a>
+	</div>
+
+	<script type="text/javascript">
+		$(function() {
+			$('#datetimepicker1').datetimepicker({
+				pickTime : false
+			});
+
+			$('#datetimepicker2').datetimepicker({
+				pickTime : false
+			});
+		});
+	</script>
+	<div id="DIV">
+		<div id="dragDiv">
+			<!-- <div id="rRightDown"></div>
+			<div id="rLeftDown"></div>
+			<div id="rRightUp"></div>
+			<div id="rLeftUp"></div> -->
+			<div id="rRight"></div>
+			<div id="rLeft"></div>
+			<!-- 	<div id="rUp"></div>
+			<div id="rDown"></div> -->
+			<div id="chart1" class='with-transitions' style='padding: 0 0 1%;text-align:center;font-size:20px'>D泵站
+				<svg
+					style='padding: 0 5%; height: 150px; overflow-y: scroll; display: block;'>
+		        </svg>
+			</div>
+			<div id="chart2" class='with-transitions' style='padding: 0 0 1%;text-align:center;font-size:20px'>污水厂进水口
+				<svg
+					style='padding: 0 5%; height: 150px; overflow-y: scroll; display: block;'>
+		</svg>
+			</div>
+
+			<div id="chart3" class='with-transitions' style='padding: 0 0 1%;text-align:center;font-size:20px'>污水厂出水口
+				<svg
+					style='padding: 0 5%; height: 150px; overflow-y: scroll; display: block;'>
+		</svg>
+			</div>
+
+			<div id="chart4" class='with-transitions' style='padding: 0 0 3%;text-align:center;font-size:20px'>蓟运河故道示范段
+				<svg
+					style='padding: 0 5%; height: 150px; overflow-y: scroll; display: block;'>
+		</svg>
+			</div>
+
+		</div>
+	</div>
+	<script type="text/javascript">
+		var maxv;
+		var minv;
+		var currentMin = startdate;
+		var currentMax = enddate;
+
+		function play() {
+
+			maxv = currentMax + 2592000000;
+			minv = currentMin + 2592000000;
+
+			for (var i = 1; i < 5; i++) {
+				chartlist[i].xDomain([ minv, maxv ]);
+				chartlist[i].update();
+
+			}
+			currentMax = maxv;
+			currentMin = minv;
+		}
+
+		function reverse() {
+
+			maxv = currentMax - 2592000000;
+			minv = currentMin - 2592000000;
+
+			for (var i = 1; i < 5; i++) {
+				chartlist[i].xDomain([ minv, maxv ]);
+				chartlist[i].update();
+
+			}
+			currentMax = maxv;
+			currentMin = minv;
+		}
+	</script>
+	<div id="tool" class="well" style="height: 30px;">
+		<div>
+			<button id="play" class="btn btn-success" onclick="play()"
+				style="width: 70px; height: 30px; TEXT-ALIGN: center; float: left; margin-top: -15px">前进</button>
+		</div>
+		<div id="slider"
+			style="width: 90%; height: 15px; float: left; margin-left: 20px; transition-duration: 100ms; box-shadow: inset 0 0 4px rgba(163, 18, 0, 0.7), inset 0 0 2px rgba(0, 0, 0, 0.5); margin-top: -5px; background: #e69e9b">
+			<script>
+				$(function() {
+					$("#slider").slider({
+						range : true,
+						min : startdate,
+						max : enddate,
+						values : [ startdate, enddate ],
+						slide : function(event, ui) {
+							maxv = d3.min([ ui.values[1], enddate ]);
+							minv = d3.max([ ui.values[0], startdate ]);
+							for (var i = 1; i < 5; i++) {
+								chartlist[i].xDomain([ minv, maxv ]);
+								chartlist[i].update();
+							}
+							currentMax = maxv;
+							currentMin = minv;
+						}
+					});
+				});
+			</script>
+		</div>
+		<div>
+			<button id="play" class="btn btn-success" onclick="reverse()"
+				style="width: 70px; height: 30px; float: left; margin-left: 20px; margin-top: -15px">后退</button>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		var isIE = (document.all) ? true : false;
+
+		var $id = function(id) {
+			return "string" == typeof id ? document.getElementById(id) : id;
+		};
+
+		var Class = {
+			create : function() {
+				return function() {
+					this.initialize.apply(this, arguments);
+				}
+			}
+		}
+
+		var Extend = function(destination, source) {
+			for ( var property in source) {
+				destination[property] = source[property];
+			}
+		}
+
+		var Bind = function(object, fun) {
+			return function() {
+				return fun.apply(object, arguments);
+			}
+		}
+
+		var BindAsEventListener = function(object, fun) {
+			var args = Array.prototype.slice.call(arguments).slice(2);
+			return function(event) {
+				return fun
+						.apply(object, [ event || window.event ].concat(args));
+			}
+		}
+
+		var CurrentStyle = function(element) {
+			return element.currentStyle
+					|| document.defaultView.getComputedStyle(element, null);
+		}
+
+		function addEventHandler(oTarget, sEventType, fnHandler) {
+			if (oTarget.addEventListener) {
+				oTarget.addEventListener(sEventType, fnHandler, false);
+			} else if (oTarget.attachEvent) {
+				oTarget.attachEvent("on" + sEventType, fnHandler);
+			} else {
+				oTarget["on" + sEventType] = fnHandler;
+			}
+		};
+
+		function removeEventHandler(oTarget, sEventType, fnHandler) {
+			if (oTarget.removeEventListener) {
+				oTarget.removeEventListener(sEventType, fnHandler, false);
+			} else if (oTarget.detachEvent) {
+				oTarget.detachEvent("on" + sEventType, fnHandler);
+			} else {
+				oTarget["on" + sEventType] = null;
+			}
+		};
+
+		//缩放程序
+		var SimpleResize = Class.create();
+		SimpleResize.prototype = {
+			initialize : function(obj, options) {
+				this._obj = $id(obj);
+
+				this._fR = BindAsEventListener(this, this.Resize);
+				this._fS = Bind(this, this.Stop);
+
+				this._obj.style.position = "absolute";
+			},
+			//设置触发对象
+			Set : function(resize, side) {
+				var resize = $id(resize), fun;
+				if (!resize)
+					return;
+				switch (side.toLowerCase()) {
+				case "up":
+					fun = this.Up;
+					break;
+				case "down":
+					fun = this.Down;
+					break;
+				case "left":
+					fun = this.Left;
+					break;
+				case "right":
+					fun = this.Right;
+					break;
+				case "left-up":
+					fun = this.LeftUp;
+					break;
+				case "right-up":
+					fun = this.RightUp;
+					break;
+				case "left-down":
+					fun = this.LeftDown;
+					break;
+				case "right-down":
+				default:
+					fun = this.RightDown;
+				}
+				;
+				addEventHandler(resize, "mousedown", BindAsEventListener(this,
+						this.Start, fun));
+			},
+			//准备缩放
+			Start : function(e, fun) {
+				this._fun = fun;
+
+				this._styleWidth = this._obj.clientWidth;
+				this._styleHeight = this._obj.clientHeight;
+				this._styleLeft = this._obj.offsetLeft;
+				this._styleTop = this._obj.offsetTop;
+
+				this._sideLeft = e.clientX - this._styleWidth;
+				this._sideRight = e.clientX + this._styleWidth;
+				this._sideUp = e.clientY - this._styleHeight;
+				this._sideDown = e.clientY + this._styleHeight;
+
+				this._fixLeft = this._styleWidth + this._styleLeft;
+				this._fixTop = this._styleHeight + this._styleTop;
+
+				addEventHandler(document, "mousemove", this._fR);
+				addEventHandler(document, "mouseup", this._fS);
+			},
+			//缩放
+			Resize : function(e) {
+				this._fun(e);
+				with (this._obj.style) {
+					width = this._styleWidth + "px";
+					height = this._styleHeight + "px";
+					top = this._styleTop + "px";
+					left = this._styleLeft + "px";
+				}
+				for (var i = 1; i < 5; i++) {
+					chartlist[i].update();
+				}
+			},
+			//缩放程序
+			//上
+			Up : function(e) {
+				this._styleHeight = Math.max(this._sideDown - e.clientY, 0);
+				this._styleTop = this._fixTop - this._styleHeight;
+			},
+			//下
+			Down : function(e) {
+				this._styleHeight = Math.max(e.clientY - this._sideUp, 0);
+			},
+			//右
+			Right : function(e) {
+				this._styleWidth = Math.max(e.clientX - this._sideLeft, 0);
+			},
+			//左
+			Left : function(e) {
+				this._styleWidth = Math.max(this._sideRight - e.clientX, 0);
+				this._styleLeft = this._fixLeft - this._styleWidth;
+			},
+			//右下
+			RightDown : function(e) {
+				this.Right(e);
+				this.Down(e);
+			},
+			//右上
+			RightUp : function(e) {
+				this.Right(e);
+				this.Up(e);
+			},
+			//左下
+			LeftDown : function(e) {
+				this.Left(e);
+				this.Down(e);
+			},
+			//左上
+			LeftUp : function(e) {
+				this.Left(e);
+				this.Up(e);
+			},
+			//停止缩放
+			Stop : function() {
+				removeEventHandler(document, "mousemove", this._fR);
+				removeEventHandler(document, "mouseup", this._fS);
+			}
+		};
+	</script>
+	<script>
+		var rs = new SimpleResize("dragDiv");
+
+		rs.Set("rRightDown", "right-down");
+		rs.Set("rLeftDown", "left-down");
+
+		rs.Set("rRightUp", "right-up");
+		rs.Set("rLeftUp", "left-up");
+
+		rs.Set("rRight", "right");
+		rs.Set("rLeft", "left");
+
+		rs.Set("rUp", "up");
+		rs.Set("rDown", "down");
+	</script>
+</body>
+</html>

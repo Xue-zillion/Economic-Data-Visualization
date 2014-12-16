@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>lineChartSVGResize</title>
+
+<link href="scripts/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link
+	href="scripts/bootstrap/bootstrapdatetimepicker/css/bootstrap-datetimepicker.min.css"
+	rel="stylesheet">
+<link rel="stylesheet"
+	href="http://code.jquery.com/ui/1.9.0/themes/base/jquery-ui.css" />
+<link rel="stylesheet" href="scripts/nvd3/nvd3.css" />
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script type="text/javascript" src="scripts/nvd3/d3.v3.js"></script>
+<script type="text/javascript" src="scripts/nvd3/nv.d3.js"></script>
+<script type="text/javascript" src="scripts/jquery/jquery.js"></script>
+<script src="http://code.jquery.com/ui/1.9.0/jquery-ui.js"></script>
+<script type="text/javascript"
+	src="scripts/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript"
+	src="scripts/bootstrap/bootstrapdatetimepicker/js/bootstrap-datetimepicker.min.js"></script>
+
+<script src="scripts/js/crossfilter.js"></script>
+<script src="scripts/js/tooltip.js"></script>
+<script src="scripts/js/utils.js"></script>
+<script src="scripts/js/legend.js"></script>
+<script src="scripts/js/axis.js"></script>
+<script src="scripts/js/scatter.js"></script>
+<script src="scripts/js/line.js"></script>
+<script src="scripts/js/lineWithFocusChart.js"></script>
+<script src="scripts/js/stream_layers.js"></script>
+
+
+</head>
+<style>
+body {
+	font: 10px sans-serif;
+	font-weight: bold; //
+	font-family: SimSun;
+	shape-rendering: crispEdges;
+}
+
+.day {
+	fill: #fff;
+	stroke: #ccc;
+}
+
+.month {
+	fill: none;
+	stroke: #000;
+	stroke-width: 2px;
+}
+
+.yearLabel {
+	font: 12px sans-serif;
+	font-weight: bold;
+	text-anchor: middle;
+}
+
+.RdYlGn .q0-11 {
+	fill: rgb(165, 0, 38)
+}
+
+.RdYlGn .q1-11 {
+	fill: rgb(215, 48, 39)
+}
+
+.RdYlGn .q2-11 {
+	fill: rgb(244, 109, 67)
+}
+
+.RdYlGn .q3-11 {
+	fill: rgb(253, 174, 97)
+}
+
+.RdYlGn .q4-11 {
+	fill: rgb(254, 224, 139)
+}
+
+.RdYlGn .q5-11 {
+	fill: rgb(255, 255, 191)
+}
+
+.RdYlGn .q6-11 {
+	fill: rgb(217, 239, 139)
+}
+
+.RdYlGn .q7-11 {
+	fill: rgb(166, 217, 106)
+}
+
+.RdYlGn .q8-11 {
+	fill: rgb(102, 189, 99)
+}
+
+.RdYlGn .q9-11 {
+	fill: rgb(26, 152, 80)
+}
+
+.RdYlGn .q10-11 {
+	fill: rgb(0, 104, 55)
+}
+
+.AirColor .q0-7 {
+	fill: rgb(0, 255, 0)
+}
+
+.AirColor .q1-7 {
+	fill: rgb(255, 255, 0)
+}
+
+.AirColor .q2-7 {
+	fill: rgb(255, 165, 0)
+}
+
+.AirColor .q3-7 {
+	fill: rgb(255, 0, 0)
+}
+
+.AirColor .q4-7 {
+	fill: rgb(128, 0, 128)
+}
+
+.AirColor .q5-7 {
+	fill: rgb(128, 0, 0)
+}
+
+.AirColor .q6-7 {
+	fill: rgb(128, 0, 0)
+}
+</style>
+<body>
+<script type="text/javascript">
+	var charta;
+	var so2data = [], n02data = [], codata = [], o3data = [], pm10data = [], pm25data = [],so2json;
+	var amin, amax;
+	function myData(year) {
+		var option = document.createElement("OPTION");
+		option.value = "value";
+		option.text = "text";
+		//$(document).ready(
+				//function() {
+					$.ajaxSetup({
+						contentType : "application/json"
+					});
+					$.ajax({
+						type : "GET",
+						url : "webresources/myresource/testdata2",
+						async : false, 
+						success : function(data) {
+							$(data).each(
+									function(index, value) {
+										if (year == 'allyear') {
+											var date =value[0]+"/"+value[1]+"/"+value[2];
+											so2data.push({
+												x : date,
+												y : parseFloat(value[3]).toFixed(3)
+											});										
+										} else {
+											if (value[0] == year) {
+												var date = new Date(
+														parseInt(value[0]),
+														parseInt(value[1]) - 1,
+														1).getTime();//change the date from Date to integer,if not,the tooltips on the chart do not pop up on hovering it
+												so2data.push({
+													x : date,
+													y : parseFloat(value[3])
+												});
+										
+											}
+										}
+										
+									});
+							
+						},
+						dataType : "json"
+					});
+
+				//});
+
+		
+	}
+		var cellSize = 17; // cell size
+		var margin = {
+			top : 19,
+			right : 20,
+			bottom : 20,
+			left : 70
+		};
+		var width = 54 * cellSize + margin.right + margin.left; // width
+		var height = 7 * cellSize + margin.top + margin.bottom; // height
+		//var width = 960,
+		// height = 150,
+
+		var day = function(d) {
+			var tmp = d3.time.format("%w")(d) - 1;
+			if (tmp < 0) {
+				tmp = 6;
+			}
+			return tmp;
+		}
+		//var day = d3.time.format("%w"),
+		//var week = d3.time.format("%U"),
+		var week = d3.time.format("%W"), percent = d3.format(".1%"), format = d3.time
+				.format("%Y/%m/%d");
+
+		var color = function(domain, d) {
+			var tmp = d3.scale.threshold().domain(
+					[ 0.035, 0.145, 0.225, 0.305, 0.605, 0.805 ]).range(
+					d3.range(7).map(function(d) {
+						return "q" + d + "-7";
+					}));
+			return tmp(d);
+		}
+
+		var svg = d3.select("body").selectAll("svg").data(d3.range(2009, 2015))
+				.enter().append("svg").attr("width", width).attr("height",
+						height).attr("class", "AirColor").append("g").attr(
+						"transform",
+						"translate(" + (width - cellSize * 54 - margin.right)
+								+ "," + (height - cellSize * 7 - margin.bottom)
+								+ ")");
+
+		svg.append("text").attr("transform",
+				"translate(-40," + cellSize * 3.5 + ")rotate(-90)").attr(
+				"class", "yearLabel").text(function(d) {
+			return d;
+		});
+
+		var rect = svg.selectAll(".day").data(function(d) {
+			return d3.time.days(new Date(d, 0, 1), new Date(d + 1, 0, 1));
+		}).enter().append("rect").attr("class", "day").attr("width", cellSize)
+				.attr("height", cellSize).attr("x", function(d) {
+					return week(d) * cellSize;
+				}).attr("y", function(d) {
+					return day(d) * cellSize;
+				}).datum(format);
+
+		rect.append("title").text(function(d) {
+			return d;
+		});
+
+		svg.selectAll(".month").data(function(d) {
+			return d3.time.months(new Date(d, 0, 1), new Date(d + 1, 0, 1));
+		}).enter().append("path").attr("class", "month").attr("d", monthPath);
+
+		var month_name = d3.time.format("%b");
+		var month_number = d3.time.format("%m");
+		var month_name_cn = [ "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月",
+				"9月", "10月", "11月", "12月" ];
+		svg.selectAll("text.month").data(function(d) {
+			return d3.time.months(new Date(d, 0, 1), new Date(d + 1, 0, 1));
+		}).enter().append("text").attr("x", function(d) {
+			return week(d) * cellSize;
+		}).attr("y", 8 * cellSize).text(function(d) {
+			return month_name_cn[(+month_number(d) - 1)];
+		});
+
+		var weekday_name = d3.time.format("%a");
+		var weekday_name_cn = [ "周一", "周二", "周三", "周四", "周五", "周六", "周日" ];
+		svg.selectAll("text.weekday").data(function(d) {
+			return d3.time.days(new Date(d, 0, 1), new Date(d, 0, 8));
+		}).enter().append("text").attr("x", -cellSize - 10).attr(
+				"y",
+				function(d) {
+					return (day(d) - 0.3) * cellSize
+							+ (height - cellSize * 7 - margin.bottom);
+				}).text(function(d) {
+			return weekday_name_cn[day(d)];
+		});
+		
+		
+		
+		    myData('allyear');
+		//document.write(JSON.stringify(so2json));
+		     //csv = JSON.parse( so2data ); 
+		    console.log(JSON.stringify(so2data));
+		   // d3.csv("SO2_daily.csv", function(error, csv) {
+		    	//console.log(JSON.stringify(csv));
+		    	console.log(JSON.stringify(so2data));
+		    	//console.log(csv);
+		    	console.log(so2data);
+		    	  var data = d3.nest()
+		    	    .key(function(d) { return d.x; })
+		    	    .rollup(function(d) { return d[0].y; })
+		    	    .map(so2data);
+		    	    var domain = so2data.map(function(d) { return d.y; });
+		    	    //var domain = ss.jenks(csv.map(function(d) { return d.VALUE; }), 11);
+		    	  rect.filter(function(d) { return d in data; })
+		    	      .attr("class", function(d) { return "day " + color(domain, data[d]); })
+		    	    .select("title")
+		    	      .text(function(d) { return d + ": " + data[d]; });
+		    	//});
+
+		function monthPath(t0) {
+			var t1 = new Date(t0.getFullYear(), t0.getMonth() + 1, 0), d0 = +day(t0), w0 = +week(t0), d1 = +day(t1), w1 = +week(t1);
+			return "M" + (w0 + 1) * cellSize + "," + d0 * cellSize + "H" + w0
+					* cellSize + "V" + 7 * cellSize + "H" + w1 * cellSize + "V"
+					+ (d1 + 1) * cellSize + "H" + (w1 + 1) * cellSize + "V" + 0
+					+ "H" + (w0 + 1) * cellSize + "Z";
+		}
+
+		d3.select(self.frameElement).style("height", "2910px");
+	</script>
+
+	<h1 align="center">T_AIR_MONTH_AVG_DATA</h1>
+	<div class="well" style="height: 60px;">
+		<div id="datetimepicker1" class="input-append date"
+			style="margin-right: 20px;; float: left;">
+			<label>start date</label> <input data-format="dd/MM/yyyy hh:mm:ss"
+				id="date1" type="text"></input> <span class="add-on"> <span
+				class="glyphicon glyphicon-calendar" data-time-icon="icon-time"
+				data-date-icon="icon-calendar" style="cursor: pointer"></span>
+			</span>
+		</div>
+
+		<div id="datetimepicker2" class="input-append date"
+			style="margin-right: 20px;; float: left;">
+			<label>end date</label> <input data-format="dd/MM/yyyy hh:mm:ss"
+				id="date2" type="text"></input> <span class="add-on"> <span
+				class="glyphicon glyphicon-calendar" data-time-icon="icon-time"
+				data-date-icon="icon-calendar" style="cursor: pointer"></span>
+			</span>
+		</div>
+
+		<div>
+			<span style="float: left">CHOOSE STYLE</span> <select
+				onchange="selectStyle()" id="selectStyle"
+				style='margin-right: 20px;; float: left'>
+				<option>LINE</option>
+				<option>STACKEDAREA</option>
+				<option>STACKEDBAR</option>
+			</select>
+		</div>
+		<a class="btn btn-success" id="redraw" role="button">redraw</a>
+	</div>
+
+	<div id="chart1" class='with-transitions'>
+		<svg
+			style='padding: 0px 0px; height: 600px; overflow-y: scroll; display: block;'>
+		</svg>
+	</div>
+
+
+</body>
+</html>

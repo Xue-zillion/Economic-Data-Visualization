@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>stackedAreaChart</title>
+
+<link href="http://cdn.bootcss.com/nvd3/1.1.15-beta/nv.d3.css" rel="stylesheet">
+<script type="text/javascript" src="scripts/nvd3/d3.v3.js"></script>
+<script type="text/javascript" src="scripts/nvd3/nv.d3.js"></script>
+
+<script type="text/javascript" src="scripts/jquery/jquery.js"></script>
+
+</head>
+<body>
+    <div id="chart1" class='with-transitions'>
+    <svg style='padding:100px 0px;height:600px;overflow-y:scroll;display: block;'></svg>
+  </div>
+<script type="text/javascript">
+   
+	function myData() {
+		var so2data = [],
+		    n02data = [],
+		    codata = [],
+		    o3data = [],
+		    pm10data = [],
+		    pm25data = [];
+		$(document).ready(function() {
+			$.ajaxSetup({
+				contentType : "application/json"
+			});
+
+			$.ajax({
+				type : "GET",
+				url : "webresources/myresource/testdata",
+				async: false,
+				success : function(data) {
+					$(data).each(function(index, value) {
+						var date = new Date(parseInt(value[0]),parseInt(value[1])-1,1).getTime();				
+						so2data.push({
+							x: date, 
+							y: parseFloat(value[3])
+							});
+						n02data.push({
+							x: date, 
+							y: parseFloat(value[4])
+							});
+						codata.push({
+							x: date, 
+							y: parseFloat(value[5])
+							});
+						o3data.push({
+							x: date, 
+							y: parseFloat(value[6])
+							});
+						pm10data.push({
+							x: date, 
+							y: parseFloat(value[7])
+							});
+						pm25data.push({
+							x: date, 
+							y: parseFloat(value[8])
+							});
+					});
+				},
+				dataType : "json",
+				async: false
+			});
+
+		});
+		
+	    return [
+	        {
+	            key: "SO2",
+	            values: so2data,
+	            color: "#FFC0CB"
+	        },
+	        {
+	            key: "NO2",
+	            values: n02data,
+	            color: "#FF83FA"
+	        },
+	        {
+	            key: "CO",
+	            values: codata,
+	            color: "#CAFF70"
+	        },
+	        {
+	            key: "O3",
+	            values: o3data,
+	            color: "#9B30FF"
+	        },
+	        {
+	            key: "PM10",
+	            values: pm10data,
+	            color: "#7CFC00"
+	        },
+	        {
+	            key: "PM2.5",
+	            values: pm25data,
+	            color: "#0000FF"
+	        }
+	    ];
+	}
+
+		nv.addGraph(function() {
+		    var chart = nv.models.stackedAreaChart().margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
+		    .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+		   ;
+		    
+		    chart.xAxis.axisLabel("Date (y/m)").tickFormat(function (d) {
+		        return d3.time.format("%y/%m")(new Date(d))
+		    });
+		    chart.yAxis
+		        .axisLabel("Content")
+		        .tickFormat(d3.format('.02f'))
+		        .showMaxMin(true)
+		        ;
+		    d3.select('#chart1 svg')
+		        .datum(myData())
+		        .transition().duration(500).call(chart);
+		    
+		    nv.utils.windowResize(chart.update); 
+		    return chart;
+		});
+</script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+INDEX VERSION 1.127
+C:\Users\Xue\workspace\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\2469920064.index
+\visual\src\main\java
+C:\Users\Xue\workspace\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\285688192.index
+\Economic\src\main\resources
+C:\Users\Xue\workspace\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\4023500794.index
+\economic\src\main\resources

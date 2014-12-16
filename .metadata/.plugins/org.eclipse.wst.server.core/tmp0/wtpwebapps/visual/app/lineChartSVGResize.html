@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>lineChartSVGResize</title>
+
+<!-- Bootstrap core CSS -->
+<link href="scripts/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link href="scripts/bootstrap/bootstrapdatetimepicker/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+    
+<link rel="stylesheet" href="scripts/nvd3/nvd3.css" />
+<script type="text/javascript" src="scripts/nvd3/d3.v3.js"></script>
+<script type="text/javascript" src="scripts/nvd3/nv.d3.js"></script>
+<script type="text/javascript" src="scripts/jquery/jquery.js"></script>
+<script type="text/javascript" src="scripts/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="scripts/bootstrap/bootstrapdatetimepicker/js/bootstrap-datetimepicker.min.js"></script>
+
+
+<script src="scripts/js/crossfilter.js"></script>
+<script src="scripts/js/tooltip.js"></script>
+<script src="scripts/js/utils.js"></script>
+<script src="scripts/js/legend.js"></script>
+<script src="scripts/js/axis.js"></script>
+<script src="scripts/js/scatter.js"></script>
+<script src="scripts/js/line.js"></script>
+<script src="scripts/js/lineWithFocusChart.js"></script>
+<script src="scripts/js/stream_layers.js"></script>
+<script type="text/javascript">
+
+	function myData(year) {
+		var so2data = [],
+		    n02data = [],
+		    codata = [],
+		    o3data = [],
+		    pm10data = [],
+		    pm25data = [];
+		var option=document.createElement("OPTION");
+		option.value = "value";
+		option.text = "text";
+		$(document).ready(function() {
+
+			
+			$.ajaxSetup({
+				contentType : "application/json"
+			});
+			
+
+			/*
+			$("#datetimepicker1 input").on('change',function(){
+			    alert('Change Happened');
+			});
+			$("#date2").on('input',function(){
+			    alert('Change Happened');
+			});
+			*/
+			
+			$("#redraw").click(function(){
+				alert('redraw the chart');
+			});
+
+
+
+			$.ajax({
+				type : "GET",
+				url : "webresources/myresource/testdata",
+				async: false,    //run synchronously, the program will have to wait until success after running statement to complete and return the results to continue executing the next statement
+				success : function(data) {
+					$(data).each(function(index, value) {
+						if(year=='allyear'){
+						var date = new Date(parseInt(value[0]),parseInt(value[1])-1,1).getTime();//change the date from Date to integer,if not,the tooltips on the chart do not pop up on hovering it
+						so2data.push({
+							x: date, 
+							y: parseFloat(value[3])
+							});
+						n02data.push({
+							x: date, 
+							y: parseFloat(value[4])
+							});
+						codata.push({
+							x: date, 
+							y: parseFloat(value[5])
+							});
+						o3data.push({
+							x: date, 
+							y: parseFloat(value[6])
+							});
+						pm10data.push({
+							x: date, 
+							y: parseFloat(value[7])
+							});
+						pm25data.push({
+							x: date, 
+							y: parseFloat(value[8])
+							});
+                        //get the value to add to the select(select year)
+					    /*var selObj = document.getElementById("selectYear");
+					    var Option = document.createElement("OPTION");
+					    Option.value = "value";
+					    Option.text = value[0];
+					    if(option.text==Option.text){
+					    }else{
+						    selObj.options.add(Option);
+					    }
+					    option=Option;*/
+					    
+						}else{
+							if(value[0]==year){
+						var date = new Date(parseInt(value[0]),parseInt(value[1])-1,1).getTime();//change the date from Date to integer,if not,the tooltips on the chart do not pop up on hovering it
+						so2data.push({
+							x: date, 
+							y: parseFloat(value[3])
+							});
+						n02data.push({
+							x: date, 
+							y: parseFloat(value[4])
+							});
+						codata.push({
+							x: date, 
+							y: parseFloat(value[5])
+							});
+						o3data.push({
+							x: date, 
+							y: parseFloat(value[6])
+							});
+						pm10data.push({
+							x: date, 
+							y: parseFloat(value[7])
+							});
+						pm25data.push({
+							x: date, 
+							y: parseFloat(value[8])
+							});	
+							}else{
+								
+							}
+							
+						}
+						
+						
+					});
+				},
+				dataType : "json"
+			});
+
+		});
+		
+	    return [
+	        {
+	            key: "SO2",
+	            values: so2data,
+	            color: "#FFC0CB"
+	        },
+	        {
+	            key: "NO2",
+	            values: n02data,
+	            color: "#FF83FA"
+	        },
+	        {
+	            key: "CO",
+	            values: codata,
+	            color: "#CAFF70"
+	        },
+	        {
+	            key: "O3",
+	            values: o3data,
+	            color: "#9B30FF"
+	        },
+	        {
+	            key: "PM10",
+	            values: pm10data,
+	            color: "#7CFC00"
+	        },
+	        {
+	            key: "PM2.5",
+	            values: pm25data,
+	            color: "#0000FF"
+	        }
+	    ];
+	}
+	
+	var linechart = nv.models.lineChart().margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
+	.showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+    .showYAxis(true)        //Show the y-axis
+    .showXAxis(true)        //Show the x-axis
+    ;
+	     addGraph(linechart,'allyear');
+         
+	     function  addGraph(chart,data){
+     		nv.addGraph(function() {
+    		    
+    		    chart.xAxis.axisLabel("Date (y/m)").tickFormat(function (d) {
+    		        return d3.time.format("%y/%m")(new Date(d))
+    		    });
+    		    chart.yAxis
+    		        .axisLabel("Content")
+    		        .tickFormat(d3.format('.02f'))
+    		        .showMaxMin(true)
+    		        ;
+    		    d3.select('#chart1 svg')
+    		        .datum(myData(data))
+    		        .transition().duration(500).call(chart);
+    	
+    		    nv.utils.windowResize(chart.update); 
+    		    return chart;
+    		});
+         }
+
+		function selectStyle()
+		{
+			var obj=document.getElementById('selectStyle');
+			var index=obj.selectedIndex; 
+			var val = obj.options[index].text;
+			var chart
+			switch(val)
+			{
+			case 'LINE':
+				linechart = nv.models.lineChart().margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
+				.showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+			    .showYAxis(true)        //Show the y-axis
+			    .showXAxis(true)        //Show the x-axis
+			    ;
+			  break;
+			case 'STACKEDAREA':
+				linechart = nv.models.stackedAreaChart().margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
+			    .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+			   ;
+			  break;
+			case 'STACKEDBAR':
+				linechart = nv.models.multiBarChart();
+			break;
+			default:
+			}
+			var obj1=document.getElementById('selectYear');
+			var index1=obj1.selectedIndex; 
+			var val1 = obj1.options[index1].text;
+			document.getElementById('chart1').innerHTML="<svg style='padding:100px 0px;height:600px;overflow-y:scroll;display: block;'></svg>"; 
+			addGraph(linechart,val1);
+		}
+		
+		function selectYear(){
+			var obj=document.getElementById('selectYear');
+			var index=obj.selectedIndex; 
+			var val = obj.options[index].text;
+			
+			addGraph(linechart,val);
+		}
+
+		
+</script>
+
+</head>
+<body>
+	<h1 align="center">T_AIR_MONTH_AVG_DATA</h1>
+	<!-- <div> 
+	    <span style="float:left">CHOOSE YEAR</span>
+	    <select onchange="selectYear()" id="selectYear" style='width:100px;float:left'>
+		   <option>allyear</option>
+	    </select>
+	</div> 
+	 -->
+	<div class="well" style="height:60px;">
+	  <div id="datetimepicker1" class="input-append date" style="margin-right: 20px;;float:left;">
+	    <label>start date</label>
+	    <input data-format="dd/MM/yyyy hh:mm:ss" id="date1" type="text"></input>
+
+	    <span class="add-on">
+
+	      <span class="glyphicon glyphicon-calendar" data-time-icon="icon-time" data-date-icon="icon-calendar" style="cursor: pointer"></span>
+	    </span>
+	  </div>
+	  
+	  <div id="datetimepicker2" class="input-append date" style="margin-right: 20px;;float:left;">
+	    <label>end date</label>
+	    <input data-format="dd/MM/yyyy hh:mm:ss" id="date2" type="text"></input>
+
+	    <span class="add-on">
+
+	      <span class="glyphicon glyphicon-calendar" data-time-icon="icon-time" data-date-icon="icon-calendar" style="cursor: pointer"></span>
+	    </span>
+	  </div>
+	  
+	  	<div> 
+		   <span style="float:left">CHOOSE STYLE</span>
+		   <select onchange="selectStyle()" id="selectStyle" style='margin-right: 20px;;float:left'>
+			   <option>LINE</option>
+			   <option>STACKEDAREA</option>
+			   <option>STACKEDBAR</option>
+		   </select>
+		</div>
+		<a class="btn btn-success" id="redraw" role="button">redraw</a>
+	</div>
+	
+	
+	<script type="text/javascript">
+	$(function() {
+	    $('#datetimepicker1').datetimepicker({
+	      pickTime: false
+	    });
+	    
+	    $('#datetimepicker2').datetimepicker({
+	      pickTime: false
+	    });
+	    
+	  });
+	</script>
+
+	 
+	<div id="chart1" class='with-transitions'>
+		<svg
+			style='padding: 0px 0px; height: 600px; overflow-y: scroll; display: block;'>
+		</svg>
+	</div>
+</body>
+</html>

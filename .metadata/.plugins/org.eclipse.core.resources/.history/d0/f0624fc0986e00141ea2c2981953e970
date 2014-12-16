@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>月API等级天数表</title>
+<link href="scripts/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link
+	href="scripts/bootstrap/bootstrapdatetimepicker/css/bootstrap-datetimepicker.min.css"
+	rel="stylesheet">
+<link rel="stylesheet"
+	href="http://code.jquery.com/ui/1.9.0/themes/base/jquery-ui.css" />
+<link rel="stylesheet" href="scripts/nvd3/nvd3.css" />
+<script type="text/javascript" src="scripts/nvd3/d3.v3.js"></script>
+<script type="text/javascript" src="scripts/nvd3/nv.d3.js"></script>
+<script type="text/javascript" src="scripts/jquery/jquery.js"></script>
+<script src="http://code.jquery.com/ui/1.9.0/jquery-ui.js"></script>
+<script type="text/javascript" src="scripts/nvd3/d3.v2.js"></script>
+<script type="text/javascript"
+	src="scripts/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript"
+	src="scripts/bootstrap/bootstrapdatetimepicker/js/bootstrap-datetimepicker.min.js"></script>
+<style type="text/css">
+#rRightDown, #rLeftDown, #rLeftUp, #rRightUp, #rRight, #rLeft, #rUp,
+	#rDown {
+	position: absolute;
+	background: #C00;
+	width: 7px;
+	height: 7px;
+	z-index: 5;
+	font-size: 0;
+}
+
+#rLeftDown, #rRightUp {
+	cursor: ne-resize;
+}
+
+#rRightDown, #rLeftUp {
+	cursor: nw-resize;
+}
+
+#rRight, #rLeft {
+	cursor: e-resize;
+}
+
+#rUp, #rDown {
+	cursor: n-resize;
+}
+
+#rLeftDown {
+	left: -4px;
+	bottom: -4px;
+}
+
+#rRightUp {
+	right: -4px;
+	top: -4px;
+}
+
+#rRightDown {
+	right: -4px;
+	bottom: -4px;
+	background-color: #00F;
+}
+
+#rLeftUp {
+	left: -4px;
+	top: -4px;
+}
+
+#rRight {
+	right: -4px;
+	top: 50%;
+	margin-top: -4px;
+}
+
+#rLeft {
+	left: -4px;
+	top: 50%;
+	margin-top: -4px;
+}
+
+#rUp {
+	top: -4px;
+	left: 50%;
+	margin-left: -4px;
+}
+
+#rDown {
+	bottom: -4px;
+	left: 50%;
+	margin-left: -4px;
+}
+
+#dragDiv {
+	border-left: 2px dashed #0F0;
+	border-right: 2px dashed #0F0;
+	top: 180px;
+	left: 100px;
+	right: 100px;
+	width: 90%;
+}
+
+#tool {
+	display: block;
+	bottom: -20px;
+	left: 0px;
+	right: 100px;
+	width: 100%;
+	height: 10px;
+	position: fixed;
+	text-align: center;
+}
+</style>
+
+<script type="text/javascript">
+	var starttime = null, endtime = null;
+	var so2json, so2piejson, no2json, no2piejson, cojson, copiejson, o3json, o3piejson, pm10json, pm10piejson, maxapipiejson, maxapijson;
+	var chartlist = [];
+	var listvalue = "折线图";
+	var startdate,enddate;
+	function myData(starttime, endtime) {
+
+		var so2lev1data = [], so2lev2data = [], so2lev3data = [], so2lev4data = [], so2lev5data = [], no2lev1data = [], no2lev2data = [], no2lev3data = [], no2lev4data = [], no2lev5data = [], colev1data = [], colev2data = [], colev3data = [], colev4data = [], colev5data = [], o3lev1data = [], o3lev2data = [], o3lev3data = [], o3lev4data = [], o3lev5data = [], pm10lev1data = [], pm10lev2data = [], pm10lev3data = [], pm10lev4data = [], pm10lev5data = [], maxapilev1data = [], maxapilev2data = [], maxapilev3data = [], maxapilev4data = [], maxapilev5data = [];
+		var so2lev = [ 0, 0, 0, 0, 0 ], no2lev = [ 0, 0, 0, 0, 0 ], colev = [
+				0, 0, 0, 0, 0 ], o3lev = [ 0, 0, 0, 0, 0 ], pm10lev = [ 0, 0,
+				0, 0, 0 ], maxapilev = [ 0, 0, 0, 0, 0 ];
+		$(document)
+				.ready(
+						function() {
+							$.ajaxSetup({
+								contentType : "application/json"
+							});
+
+							/*
+							$("#datetimepicker1 input").on('change',function(){
+							    alert('Change Happened');
+							})
+							$("#date2").on('input',function(){
+							    alert('Change Happened');
+							});
+							 */
+							starttime = $("#date1").val();
+							endtime = $("#date2").val();
+							$("#redraw")
+									.click(
+											function() {
+												starttime = $("#date1").val();
+												endtime = $("#date2").val();
+												/* if (starttime == ""
+														&& endtime == "") {
+													alert('请输入开始日期和截止日期');
+													return;
+												} else if (starttime == "") {
+													alert('请输入开始日期');
+													return;
+												} else if (endtime == "") {
+													alert('请输入截止日期');
+													return;
+												} */
+
+												myData(starttime, endtime);
+
+												if (listvalue == "扇形图") {
+													var piedata = [ so2piejson,
+															no2piejson,
+															copiejson,
+															o3piejson,
+															pm10piejson,
+															maxapipiejson ];
+													for (var i = 1; i < 7; i++) {
+														var div = document
+																.getElementById('chart'
+																		+ i);
+														div.style.width = "33%";
+														div.style.styleFloat = "left";
+
+														document
+																.getElementById('chart'
+																		+ i).innerHTML = "<svg style='padding: 0 5%; height: 400px; overflow-y: scroll; display: block;'></svg>";
+
+														//document.getElementById("dragDiv").innerHTML = "<div id='chart1' class='with-transitions' style='width:33%;float:left;' > <svg style='padding: 0 5%; height: 400px; overflow-y: scroll; display: block;'></svg></div><div id='chart2' class='with-transitions' style='width:33%;float:left;'  > <svg style='padding: 0 5%; height: 400px; overflow-y: scroll; display: block;'></svg></div><div id='chart3' class='with-transitions' style='width:33%;float:left;' > <svg style='padding: 0 5%; height: 400px; overflow-y: scroll; display: block;'></svg></div><div id='chart4' class='with-transitions' style='width:33%;float:left;' > <svg style='padding: 0 5%; height: 400px; overflow-y: scroll; display: block;'></svg></div><div id='chart5' class='with-transitions' style='width:33%;float:left;'  > <svg style='padding: 0 5%; height: 400px; overflow-y: scroll; display: block;'></svg></div><div id='chart6' class='with-transitions' style='width:33%;float:left;' > <svg style='padding: 0 5%; height: 400px; overflow-y: scroll; display: block;'></svg></div>";
+
+														addGraph('#chart' + i
+																+ ' svg',
+																piedata[i - 1],
+																i);
+													}
+
+												} else {
+													var datalist = [ so2json,
+															no2json, cojson,
+															o3json, pm10json,
+															maxapijson ];
+													for (var i = 1; i < 7; i++) {
+														var div = document
+																.getElementById('chart'
+																		+ i);
+														div.style.width = "100%";
+														div.style.styleFloat = "";
+
+														document
+																.getElementById('chart'
+																		+ i).innerHTML = "<svg style='padding: 0 5%; height: 150px; overflow-y: scroll; display: block;'></svg>";
+														addGraph(
+																'#chart'
+																		+ i
+																		+ ' svg',
+																datalist[i - 1],
+																i);
+													}
+
+												}
+
+											});
+							var param = {};
+							param.data = "testdata";
+							$.ajax({
+										type : "GET",
+										url : "webresources/myresource/testdata6",
+										async : false, //run synchronously, the program will have to wait until success after running statement to complete and return the results to continue executing the next statement
+										data : param,
+										success : function(data) {
+											startdate = new Date(
+													parseInt(data[0][0]),
+													parseInt(data[0][1]) - 1,
+													Number(data[0][2]))
+													.getTime();
+											enddate = new Date(
+													parseInt(data[data.length - 1][0]),
+													parseInt(data[data.length - 1][1]) - 1,
+													Number(data[data.length - 1][2]))
+													.getTime();
+											$(data).each(
+															function(index,
+																	value) {
+																if (starttime == ""
+																		&& endtime == "") {
+																	var date = new Date(
+																			parseInt(value[0]),
+																			parseInt(value[1]) - 1,
+																			Number(value[2]))
+																			.getTime();//change the date from Date to integer,if not,the tooltips on the chart do not pop up on hovering it
+																	//document.write(date);
+																	if (value[8] == "so2") {
+																		so2lev1data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[3])
+																				});
+																		so2lev[0] = so2lev[0]
+																				+ parseFloat(value[3]);
+																		so2lev2data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[4])
+																				});
+																		so2lev[1] = so2lev[1]
+																				+ parseFloat(value[4]);
+																		so2lev3data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[5])
+																				});
+																		so2lev[2] = so2lev[2]
+																				+ parseFloat(value[5]);
+																		so2lev4data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[6])
+																				});
+																		so2lev[3] = so2lev[3]
+																				+ parseFloat(value[6]);
+																		so2lev5data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[7])
+																				});
+																		so2lev[4] = so2lev[4]
+																				+ parseFloat(value[7]);
+																	} else if (value[8] == "co") {
+																		colev1data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[3])
+																				});
+																		colev[0] = colev[0]
+																				+ parseFloat(value[3]);
+																		colev2data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[4])
+																				});
+																		colev[1] = colev[1]
+																				+ parseFloat(value[4]);
+																		colev3data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[5])
+																				});
+																		colev[2] = colev[2]
+																				+ parseFloat(value[5]);
+																		colev4data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[6])
+																				});
+																		colev[3] = colev[3]
+																				+ parseFloat(value[6]);
+																		colev5data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[7])
+																				});
+																		colev[4] = colev[4]
+																				+ parseFloat(value[7]);
+																	} else if (value[8] == "no2") {
+																		no2lev1data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[3])
+																				});
+																		no2lev[0] = no2lev[0]
+																				+ parseFloat(value[3]);
+																		no2lev2data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[4])
+																				});
+																		no2lev[1] = no2lev[1]
+																				+ parseFloat(value[4]);
+																		no2lev3data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[5])
+																				});
+																		no2lev[2] = no2lev[2]
+																				+ parseFloat(value[5]);
+																		no2lev4data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[6])
+																				});
+																		no2lev[3] = no2lev[3]
+																				+ parseFloat(value[6]);
+																		no2lev5data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[7])
+																				});
+																		no2lev[4] = no2lev[4]
+																				+ parseFloat(value[7]);
+																	} else if (value[8] == "o3") {
+																		o3lev1data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[3])
+																				});
+																		o3lev[0] = o3lev[0]
+																				+ parseFloat(value[3]);
+																		o3lev2data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[4])
+																				});
+																		o3lev[1] = o3lev[1]
+																				+ parseFloat(value[4]);
+																		o3lev3data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[5])
+																				});
+																		o3lev[2] = o3lev[2]
+																				+ parseFloat(value[5]);
+																		o3lev4data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[6])
+																				});
+																		o3lev[3] = o3lev[3]
+																				+ parseFloat(value[6]);
+																		o3lev5data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[7])
+																				});
+																		o3lev[4] = o3lev[4]
+																				+ parseFloat(value[7]);
+																	} else if (value[8] == "MAXAPI") {
+																		maxapilev1data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[3])
+																				});
+																		maxapilev[0] = maxapilev[0]
+																				+ parseFloat(value[3]);
+																		maxapilev2data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[4])
+																				});
+																		maxapilev[1] = maxapilev[1]
+																				+ parseFloat(value[4]);
+																		maxapilev3data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[5])
+																				});
+																		maxapilev[2] = maxapilev[2]
+																				+ parseFloat(value[5]);
+																		maxapilev4data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[6])
+																				});
+																		maxapilev[3] = maxapilev[3]
+																				+ parseFloat(value[6]);
+																		maxapilev5data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[7])
+																				});
+																		maxapilev[4] = maxapilev[4]
+																				+ parseFloat(value[7]);
+																	} else if (value[8] == "pm10") {
+																		pm10lev1data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[3])
+																				});
+																		pm10lev[0] = pm10lev[0]
+																				+ parseFloat(value[3]);
+																		pm10lev2data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[4])
+																				});
+																		pm10lev[1] = pm10lev[1]
+																				+ parseFloat(value[4]);
+																		pm10lev3data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[5])
+																				});
+																		pm10lev[2] = pm10lev[2]
+																				+ parseFloat(value[5]);
+																		pm10lev4data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[6])
+																				});
+																		pm10lev[3] = pm10lev[3]
+																				+ parseFloat(value[6]);
+																		pm10lev5data
+																				.push({
+																					x : date,
+																					y : parseFloat(value[7])
+																				});
+																		pm10lev[4] = pm10lev[4]
+																				+ parseFloat(value[7]);
+																	}
+																} else {
+																	//if(Number(starttime.split(' ')[0].split('/')[0])<=Number(value[0])&&Number(starttime.split(' ')[0].split('/')[1])<=Number(value[1])&&Number(starttime.split(' ')[0].split('/')[2])<=Number(value[2])){
+																	var datestart = new Date(
+																			Number(starttime
+																					.split(' ')[0]
+																					.split('/')[0]),
+																			Number(starttime
+																					.split(' ')[0]
+																					.split('/')[1]) - 1,
+																			Number(starttime
+																					.split(' ')[0]
+																					.split('/')[2]))
+																			.getTime();
+																	
+																	var dateend = new Date(
+																			Number(endtime
+																					.split(' ')[0]
+																					.split('/')[0]),
+																			Number(endtime
+																					.split(' ')[0]
+																					.split('/')[1]) - 1,
+																			Number(endtime
+																					.split(' ')[0]
+																					.split('/')[2]))
+																			.getTime();
+																	
+																	startdate=(startdate<datestart)?datestart:startdate;
+																	enddate=(enddate>dateend)?dateend:enddate;
+																	var date = new Date(
+																			Number(value[0]),
+																			Number(value[1]) - 1,
+																			Number(value[2]))
+																			.getTime();
+																	if (date >= datestart
+																			&& date <= dateend) {
+																		if (value[8] == "so2") {
+																			so2lev1data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			so2lev[0] = so2lev[0]
+																					+ parseFloat(value[3]);
+																			so2lev2data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[4])
+																					});
+																			so2lev[1] = so2lev[1]
+																					+ parseFloat(value[4]);
+																			so2lev3data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[5])
+																					});
+																			so2lev[2] = so2lev[2]
+																					+ parseFloat(value[5]);
+																			so2lev4data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[6])
+																					});
+																			so2lev[3] = so2lev[3]
+																					+ parseFloat(value[6]);
+																			so2lev5data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[7])
+																					});
+																			so2lev[4] = so2lev[4]
+																					+ parseFloat(value[7]);
+																		} else if (value[8] == "co") {
+																			colev1data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			colev[0] = colev[0]
+																					+ parseFloat(value[3]);
+																			colev2data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[4])
+																					});
+																			colev[1] = colev[1]
+																					+ parseFloat(value[4]);
+																			colev3data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[5])
+																					});
+																			colev[2] = colev[2]
+																					+ parseFloat(value[5]);
+																			colev4data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[6])
+																					});
+																			colev[3] = colev[3]
+																					+ parseFloat(value[6]);
+																			colev5data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[7])
+																					});
+																			colev[4] = colev[4]
+																					+ parseFloat(value[7]);
+																		} else if (value[8] == "no2") {
+																			no2lev1data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			no2lev[0] = no2lev[0]
+																					+ parseFloat(value[3]);
+																			no2lev2data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[4])
+																					});
+																			no2lev[1] = no2lev[1]
+																					+ parseFloat(value[4]);
+																			no2lev3data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[5])
+																					});
+																			no2lev[2] = no2lev[2]
+																					+ parseFloat(value[5]);
+																			no2lev4data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[6])
+																					});
+																			no2lev[3] = no2lev[3]
+																					+ parseFloat(value[6]);
+																			no2lev5data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[7])
+																					});
+																			no2lev[4] = no2lev[4]
+																					+ parseFloat(value[7]);
+																		} else if (value[8] == "o3") {
+																			o3lev1data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			o3lev[0] = o3lev[0]
+																					+ parseFloat(value[3]);
+																			o3lev2data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[4])
+																					});
+																			o3lev[1] = o3lev[1]
+																					+ parseFloat(value[4]);
+																			o3lev3data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[5])
+																					});
+																			o3lev[2] = o3lev[2]
+																					+ parseFloat(value[5]);
+																			o3lev4data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[6])
+																					});
+																			o3lev[3] = o3lev[3]
+																					+ parseFloat(value[6]);
+																			o3lev5data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[7])
+																					});
+																			o3lev[4] = o3lev[4]
+																					+ parseFloat(value[7]);
+																		} else if (value[8] == "MAXAPI") {
+																			maxapilev1data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			maxapilev[0] = maxapilev[0]
+																					+ parseFloat(value[3]);
+																			maxapilev2data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[4])
+																					});
+																			maxapilev[1] = maxapilev[1]
+																					+ parseFloat(value[4]);
+																			maxapilev3data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[5])
+																					});
+																			maxapilev[2] = maxapilev[2]
+																					+ parseFloat(value[5]);
+																			maxapilev4data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[6])
+																					});
+																			maxapilev[3] = maxapilev[3]
+																					+ parseFloat(value[6]);
+																			maxapilev5data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[7])
+																					});
+																			maxapilev[4] = maxapilev[4]
+																					+ parseFloat(value[7]);
+																		} else if (value[8] == "pm10") {
+																			pm10lev1data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[3])
+																					});
+																			pm10lev[0] = pm10lev[0]
+																					+ parseFloat(value[3]);
+																			pm10lev2data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[4])
+																					});
+																			pm10lev[1] = pm10lev[1]
+																					+ parseFloat(value[4]);
+																			pm10lev3data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[5])
+																					});
+																			pm10lev[2] = pm10lev[2]
+																					+ parseFloat(value[5]);
+																			pm10lev4data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[6])
+																					});
+																			pm10lev[3] = pm10lev[3]
+																					+ parseFloat(value[6]);
+																			pm10lev5data
+																					.push({
+																						x : date,
+																						y : parseFloat(value[7])
+																					});
+																			pm10lev[4] = pm10lev[4]
+																					+ parseFloat(value[7]);
+																		}
+																	} else {
+
+																	}
+
+																}
+
+															});
+											so2piejson = [ {
+												key : "SO2_LEV1",
+												value : so2lev[0]
+											}, {
+												key : "SO2_LEV2",
+												value : so2lev[1]
+											}, {
+												key : "SO2_LEV3",
+												value : so2lev[2]
+											}, {
+												key : "SO2_LEV4",
+												value : so2lev[3]
+											}, {
+												key : "SO2_LEV5",
+												value : so2lev[4]
+											} ];
+											no2piejson = [ {
+												key : "NO2_LEV1",
+												value : no2lev[0],
+											}, {
+												key : "NO2_LEV2",
+												value : no2lev[1],
+											}, {
+												key : "NO2_LEV3",
+												value : no2lev[2]
+
+											}, {
+												key : "NO2_LEV4",
+												value : no2lev[3]
+											}, {
+												key : "NO2_LEV5",
+												value : no2lev[4]
+											} ];
+											copiejson = [ {
+												key : "CO_LEV1",
+												value : colev[0]
+											}, {
+												key : "CO_LEV2",
+												value : colev[1]
+											}, {
+												key : "CO_LEV3",
+												value : colev[2]
+											}, {
+												key : "CO_LEV4",
+												value : colev[3]
+											}, {
+												key : "CO_LEV5",
+												value : colev[4]
+											} ];
+											o3piejson = [ {
+												key : "O3_LEV1",
+												value : o3lev[0]
+											}, {
+												key : "O3_LEV2",
+												value : o3lev[1]
+											}, {
+												key : "O3_LEV3",
+												value : o3lev[2]
+											}, {
+												key : "O3_LEV4",
+												value : o3lev[3]
+											}, {
+												key : "O3_LEV5",
+												value : o3lev[4]
+											} ];
+											pm10piejson = [ {
+												key : "PM10_LEV1",
+												value : pm10lev[0]
+											}, {
+												key : "PM10_LEV2",
+												value : pm10lev[1]
+											}, {
+												key : "PM10_LEV3",
+												value : pm10lev[2]
+											}, {
+												key : "PM10_LEV4",
+												value : pm10lev[3]
+											}, {
+												key : "PM10_LEV5",
+												value : pm10lev[4]
+											} ];
+
+											maxapipiejson = [ {
+												key : "MAXAPI_LEV1",
+												value : maxapilev[0]
+											}, {
+												key : "MAXAPI_LEV2",
+												value : maxapilev[1]
+											}, {
+												key : "MAXAPI_LEV3",
+												value : maxapilev[2]
+											}, {
+												key : "MAXAPI_LEV4",
+												value : maxapilev[3]
+											}, {
+												key : "MAXAPI_LEV5",
+												value : maxapilev[4]
+											} ];
+										},
+										dataType : "json"
+									});
+						});
+
+		so2json = [ {
+			key : "SO2_LEV1",
+			values : so2lev1data,
+			color : "#00FF00"
+		}, {
+			key : "SO2_LEV2",
+			values : so2lev2data,
+			color : "#FFFF00"
+		}, {
+			key : "SO2_LEV3",
+			values : so2lev3data,
+			color : "#FFA54F"
+		}, {
+			key : "SO2_LEV4",
+			values : so2lev4data,
+			color : "red"
+		}, {
+			key : "SO2_LEV5",
+			values : so2lev5data,
+			color : "#8E388E"
+		} ];
+
+		no2json = [ {
+			key : "NO2_LEV1",
+			values : no2lev1data,
+			color : "#00FF00"
+		}, {
+			key : "NO2_LEV2",
+			values : no2lev2data,
+			color : "#FFFF00"
+		}, {
+			key : "NO2_LEV3",
+			values : no2lev3data,
+			color : "#FFA54F"
+		}, {
+			key : "NO2_LEV4",
+			values : no2lev4data,
+			color : "red"
+		}, {
+			key : "NO2_LEV5",
+			values : no2lev5data,
+			color : "#8E388E"
+		} ];
+		cojson = [ {
+			key : "CO_LEV1",
+			values : colev1data,
+			color : "#00FF00"
+		}, {
+			key : "CO_LEV2",
+			values : colev2data,
+			color : "#FFFF00"
+		}, {
+			key : "CO_LEV3",
+			values : colev3data,
+			color : "#FFA54F"
+		}, {
+			key : "CO_LEV4",
+			values : colev4data,
+			color : "red"
+		}, {
+			key : "CO_LEV5",
+			values : colev5data,
+			color : "#8E388E"
+		} ];
+		o3json = [ {
+			key : "O3_LEV1",
+			values : o3lev1data,
+			color : "#00FF00"
+		}, {
+			key : "O3_LEV2",
+			values : o3lev2data,
+			color : "#FFFF00"
+		}, {
+			key : "O3_LEV3",
+			values : o3lev3data,
+			color : "#FFA54F"
+		}, {
+			key : "O3_LEV4",
+			values : o3lev4data,
+			color : "red"
+		}, {
+			key : "O3_LEV5",
+			values : o3lev5data,
+			color : "#8E388E"
+		} ];
+		pm10json = [ {
+			key : "PM10_LEV1",
+			values : pm10lev1data,
+			color : "#00FF00"
+		}, {
+			key : "PM10_LEV2",
+			values : pm10lev2data,
+			color : "#FFFF00"
+		}, {
+			key : "PM10_LEV3",
+			values : pm10lev3data,
+			color : "#FFA54F"
+		}, {
+			key : "PM10_LEV4",
+			values : pm10lev4data,
+			color : "red"
+		}, {
+			key : "PM10_LEV5",
+			values : pm10lev5data,
+			color : "#8E388E"
+		} ];
+
+		maxapijson = [ {
+			key : "MAXAPI_LEV1",
+			values : maxapilev1data,
+			color : "#00FF00"
+		}, {
+			key : "MAXAPI_LEV2",
+			values : maxapilev2data,
+			color : "#FFFF00"
+		}, {
+			key : "MAXAPI_LEV3",
+			values : maxapilev3data,
+			color : "#FFA54F"
+		}, {
+			key : "MAXAPI_LEV4",
+			values : maxapilev4data,
+			color : "red"
+		}, {
+			key : "MAXAPI_LEV5",
+			values : maxapilev5data,
+			color : "#8E388E"
+		} ];
+	}
+
+	myData(starttime, endtime);
+	var datainit = [ so2json, no2json, cojson, o3json, pm10json, maxapijson ];
+	for (var i = 1; i < 7; i++) {
+		addGraph('#chart' + i + ' svg', datainit[i - 1], i);
+	}
+
+	function addGraph(svg, data, i) {
+
+		nv.addGraph(function() {
+
+			if (listvalue == "折线图") {
+				var chart = nv.models.lineChart().margin({
+					top : 0,
+					right : 20,
+					bottom : 25,
+					left : 20
+				}).showLegend(true).showYAxis(true).showXAxis(true)
+						.useInteractiveGuideline(true);
+				chartlist[i] = chart;
+				
+			} else if (listvalue == "堆叠条形图") {
+				var chart = nv.models.multiBarChart().margin({
+					top : 0,
+					right : 20,
+					bottom : 25,
+					left : 20
+				});
+				chartlist[i] = chart;
+			} else if (listvalue == "扇形图") {
+				var chart = nv.models.pieChart().x(function(d) {
+					return d.key
+				}).y(function(d) {
+					return d.value
+				}).color([ "#00FF00", "#FFFF00", "#FFA54F", "red", "#8E388E" ])
+						.width(400).height(400);
+				chartlist[i] = chart;
+			} else if (listvalue == "堆积面积图") {
+				var chart = nv.models.stackedAreaChart().margin({
+					top : 0,
+					right : 20,
+					bottom : 25,
+					left : 20
+				}).showLegend(true).useInteractiveGuideline(true);
+				chartlist[i] = chart;
+			} else if (listvalue == "数据过滤图") {
+				var chart = nv.models.lineWithFocusChart().showLegend(true);
+				chart.x2Axis
+				//.axisLabel("日期(年/月/日)")
+				.tickFormat(function(d) {
+					return d3.time.format("%Y/%m")(new Date(d))
+				});
+				chart.y2Axis
+				//.axisLabel("记录值")
+				.tickFormat(d3.format('.03f')).showMaxMin(true);
+				chartlist[i] = chart;
+			}
+
+			if (listvalue == "扇形图") {
+			} else {
+				chart.xAxis
+				//.axisLabel("日期(年/月/日)")
+				.tickFormat(function(d) {
+					return d3.time.format("%Y/%m")(new Date(d))
+				});
+
+				chart.yAxis
+				//.axisLabel("记录值")
+				.tickFormat(d3.format('.03f')).showMaxMin(true);
+
+			}
+			d3.select(svg).datum(data).transition().duration(400).call(chart);
+			nv.utils.windowResize(chart.update);
+			return chart;
+		});
+	}
+
+	function selectStyle() {
+		var obj = document.getElementById('selectStyle');
+		var index = obj.selectedIndex;
+		var val = obj.options[index].text;
+		listvalue = val;
+
+	}
+</script>
+</head>
+<body>
+	<h1 align="center" style="margin-top: 20px; margin-bottom: 30px">月API等级天数表</h1>
+	<div class="well" style="height: 60px;">
+		<div id="datetimepicker1" class="input-append date"
+			style="margin-right: 20px; margin-left: 120px; float: left;">
+			<label>起始日期</label> <input data-format="yyyy/MM/dd hh:mm:ss"
+				id="date1" type="text"></input> <span class="add-on"> <span
+				class="glyphicon glyphicon-calendar" data-time-icon="icon-time"
+				data-date-icon="icon-calendar" style="cursor: pointer"></span>
+			</span>
+		</div>
+		<div id="datetimepicker2" class="input-append date"
+			style="margin-right: 20px; float: left;">
+			<label>截止日期</label> <input data-format="yyyy/MM/dd hh:mm:ss"
+				id="date2" type="text"></input> <span class="add-on"> <span
+				class="glyphicon glyphicon-calendar" data-time-icon="icon-time"
+				data-date-icon="icon-calendar" style="cursor: pointer"></span>
+			</span>
+		</div>
+
+		<div>
+			<label style="float: left">选择显示样式</label> <select
+				onchange="selectStyle()" id="selectStyle"
+				style='margin-right: 20px; float: left'>
+				<option>折线图</option>
+				<option>数据过滤图</option>
+				<option>扇形图</option>
+				<option>堆叠条形图</option>
+				<option>堆积面积图</option>
+			</select>
+		</div>
+		<a class="btn btn-success" id="redraw" role="button"
+			style="padding: 10px 15px">重画</a> <label style="margin-left: 300px">其他表:</label>
+
+		<a href="http://localhost:8080/visual/app/T_AIR_HOUR_AVG_DATA.html"
+			target="_blank" style="margin-left: 0px;">小时均值表</a> <a
+			href="http://localhost:8080/visual/app/T_AIR_DAY_AVG_DATA.html"
+			target="_blank" style="margin-left: 10px;">日均值表</a> <a
+			href="http://localhost:8080/visual/app/T_AIR_MONTH_AVG_DATA.html"
+			target="_blank" style="margin-left: 10px;">月均值表</a> <a
+			href="http://localhost:8080/visual/app/T_AIR_YEAR_AVG_DATA.html"
+			target="_blank" style="margin-left: 10px;">年均值表</a> <a
+			href="http://localhost:8080/visual/app/T_AIR_DAY_GRADE.html"
+			target="_blank" style="margin-left: 10px;">日空气等级表</a> <a
+			href="http://localhost:8080/visual/app/T_AIR_AQI_MONTH_STATS.html"
+			target="_blank" style="margin-left: 10px;">月AQI等级天数表</a>
+	</div>
+	<script type="text/javascript">
+		$(function() {
+			$('#datetimepicker1').datetimepicker({
+				pickTime : false
+			});
+
+			$('#datetimepicker2').datetimepicker({
+				pickTime : false
+			});
+
+		});
+	</script>
+	<div id="DIV">
+		<div id="dragDiv">
+			<!-- <div id="rRightDown"></div>
+			<div id="rLeftDown"></div>
+			<div id="rRightUp"></div>
+			<div id="rLeftUp"></div> -->
+			<div id="rRight"></div>
+			<div id="rLeft"></div>
+			<!-- 	<div id="rUp"></div>
+			<div id="rDown"></div> -->
+			<div id="chart1" class='with-transitions' style='padding: 0 0 1%'>
+				<svg
+					style='padding: 0 5%; height: 150px; overflow-y: scroll; display: block;'>
+		</svg>
+			</div>
+			<div id="chart2" class='with-transitions' style='padding: 0 0 1%'>
+				<svg
+					style='padding: 0 5%; height: 150px; overflow-y: scroll; display: block;'>
+		</svg>
+			</div>
+
+			<div id="chart3" class='with-transitions' style='padding: 0 0 1%'>
+				<svg
+					style='padding: 0 5%; height: 150px; overflow-y: scroll; display: block;'>
+		</svg>
+			</div>
+
+			<div id="chart4" class='with-transitions' style='padding: 0 0 1%'>
+				<svg
+					style='padding: 0 5%; height: 150px; overflow-y: scroll; display: block;'>
+		</svg>
+			</div>
+
+			<div id="chart5" class='with-transitions' style='padding: 0 0 1%'>
+				<svg
+					style='padding: 0 5%; height: 150px; overflow-y: scroll; display: block;'>
+		</svg>
+			</div>
+
+			<div id="chart6" class='with-transitions' style='padding: 0 0 3%'>
+				<svg
+					style='padding: 0 5%; height: 150px; overflow-y: scroll; display: block;'>
+		</svg>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		var maxv;
+		var minv;
+		var currentMin = startdate;
+		var currentMax = enddate;
+		
+		function play() {
+
+			maxv = currentMax + 2592000000;
+			minv = currentMin + 2592000000;
+
+			for (var i = 1; i < 7; i++) {
+				chartlist[i].xDomain([ minv, maxv ]);
+				chartlist[i].update();
+
+			}
+			currentMax = maxv;
+			currentMin = minv;
+		}
+
+		function reverse() {
+
+			maxv = currentMax - 2592000000;
+			minv = currentMin - 2592000000;
+
+			for (var i = 1; i < 7; i++) {
+				chartlist[i].xDomain([ minv, maxv ]);
+				chartlist[i].update();
+
+			}
+			currentMax = maxv;
+			currentMin = minv;
+		}
+	</script>
+	<div id="tool" class="well" style="height: 30px;">
+		<div>
+			<button id="play" class="btn btn-success" onclick="play()"
+				style="width: 70px; height: 30px; TEXT-ALIGN: center; float: left; margin-top: -15px">前进</button>
+		</div>
+		<div id="slider"
+			style="width: 90%; height: 15px; float: left; margin-left: 20px; transition-duration: 100ms; box-shadow: inset 0 0 4px rgba(163, 18, 0, 0.7), inset 0 0 2px rgba(0, 0, 0, 0.5); margin-top: -5px; background: #e69e9b">
+			<script>
+				$(function() {
+					$("#slider").slider({
+						range : true,
+						min : startdate,
+						max : enddate,
+						values : [ startdate, enddate ],
+						slide : function(event, ui) {
+							maxv = d3.min([ ui.values[1], enddate ]);
+							minv = d3.max([ ui.values[0], startdate ]);
+							for (var i = 1; i < 7; i++) {
+								chartlist[i].xDomain([ minv, maxv ]);
+								chartlist[i].update();
+							}
+							currentMax = maxv;
+							currentMin = minv;
+						}
+					});
+				});
+			</script>
+		</div>
+		<div>
+			<button id="play" class="btn btn-success" onclick="reverse()"
+				style="width: 70px; height: 30px; float: left; margin-left: 20px; margin-top: -15px">后退</button>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		var isIE = (document.all) ? true : false;
+
+		var $id = function(id) {
+			return "string" == typeof id ? document.getElementById(id) : id;
+		};
+
+		var Class = {
+			create : function() {
+				return function() {
+					this.initialize.apply(this, arguments);
+				}
+			}
+		}
+
+		var Extend = function(destination, source) {
+			for ( var property in source) {
+				destination[property] = source[property];
+			}
+		}
+
+		var Bind = function(object, fun) {
+			return function() {
+				return fun.apply(object, arguments);
+			}
+		}
+
+		var BindAsEventListener = function(object, fun) {
+			var args = Array.prototype.slice.call(arguments).slice(2);
+			return function(event) {
+				return fun
+						.apply(object, [ event || window.event ].concat(args));
+			}
+		}
+
+		var CurrentStyle = function(element) {
+			return element.currentStyle
+					|| document.defaultView.getComputedStyle(element, null);
+		}
+
+		function addEventHandler(oTarget, sEventType, fnHandler) {
+			if (oTarget.addEventListener) {
+				oTarget.addEventListener(sEventType, fnHandler, false);
+			} else if (oTarget.attachEvent) {
+				oTarget.attachEvent("on" + sEventType, fnHandler);
+			} else {
+				oTarget["on" + sEventType] = fnHandler;
+			}
+		};
+
+		function removeEventHandler(oTarget, sEventType, fnHandler) {
+			if (oTarget.removeEventListener) {
+				oTarget.removeEventListener(sEventType, fnHandler, false);
+			} else if (oTarget.detachEvent) {
+				oTarget.detachEvent("on" + sEventType, fnHandler);
+			} else {
+				oTarget["on" + sEventType] = null;
+			}
+		};
+
+		//缩放程序
+		var SimpleResize = Class.create();
+		SimpleResize.prototype = {
+			initialize : function(obj, options) {
+				this._obj = $id(obj);
+
+				this._fR = BindAsEventListener(this, this.Resize);
+				this._fS = Bind(this, this.Stop);
+
+				this._obj.style.position = "absolute";
+			},
+			//设置触发对象
+			Set : function(resize, side) {
+				var resize = $id(resize), fun;
+				if (!resize)
+					return;
+				switch (side.toLowerCase()) {
+				case "up":
+					fun = this.Up;
+					break;
+				case "down":
+					fun = this.Down;
+					break;
+				case "left":
+					fun = this.Left;
+					break;
+				case "right":
+					fun = this.Right;
+					break;
+				case "left-up":
+					fun = this.LeftUp;
+					break;
+				case "right-up":
+					fun = this.RightUp;
+					break;
+				case "left-down":
+					fun = this.LeftDown;
+					break;
+				case "right-down":
+				default:
+					fun = this.RightDown;
+				}
+				;
+				addEventHandler(resize, "mousedown", BindAsEventListener(this,
+						this.Start, fun));
+			},
+			//准备缩放
+			Start : function(e, fun) {
+				this._fun = fun;
+
+				this._styleWidth = this._obj.clientWidth;
+				this._styleHeight = this._obj.clientHeight;
+				this._styleLeft = this._obj.offsetLeft;
+				this._styleTop = this._obj.offsetTop;
+
+				this._sideLeft = e.clientX - this._styleWidth;
+				this._sideRight = e.clientX + this._styleWidth;
+				this._sideUp = e.clientY - this._styleHeight;
+				this._sideDown = e.clientY + this._styleHeight;
+
+				this._fixLeft = this._styleWidth + this._styleLeft;
+				this._fixTop = this._styleHeight + this._styleTop;
+
+				addEventHandler(document, "mousemove", this._fR);
+				addEventHandler(document, "mouseup", this._fS);
+			},
+			//缩放
+			Resize : function(e) {
+				this._fun(e);
+				with (this._obj.style) {
+					width = this._styleWidth + "px";
+					height = this._styleHeight + "px";
+					top = this._styleTop + "px";
+					left = this._styleLeft + "px";
+				}
+				for (var i = 1; i < 7; i++) {
+					chartlist[i].update();
+				}
+			},
+			//缩放程序
+			//上
+			Up : function(e) {
+				this._styleHeight = Math.max(this._sideDown - e.clientY, 0);
+				this._styleTop = this._fixTop - this._styleHeight;
+			},
+			//下
+			Down : function(e) {
+				this._styleHeight = Math.max(e.clientY - this._sideUp, 0);
+			},
+			//右
+			Right : function(e) {
+				this._styleWidth = Math.max(e.clientX - this._sideLeft, 0);
+			},
+			//左
+			Left : function(e) {
+				this._styleWidth = Math.max(this._sideRight - e.clientX, 0);
+				this._styleLeft = this._fixLeft - this._styleWidth;
+			},
+			//右下
+			RightDown : function(e) {
+				this.Right(e);
+				this.Down(e);
+			},
+			//右上
+			RightUp : function(e) {
+				this.Right(e);
+				this.Up(e);
+			},
+			//左下
+			LeftDown : function(e) {
+				this.Left(e);
+				this.Down(e);
+			},
+			//左上
+			LeftUp : function(e) {
+				this.Left(e);
+				this.Up(e);
+			},
+			//停止缩放
+			Stop : function() {
+				removeEventHandler(document, "mousemove", this._fR);
+				removeEventHandler(document, "mouseup", this._fS);
+			}
+		};
+	</script>
+	<script>
+		var rs = new SimpleResize("dragDiv");
+
+		rs.Set("rRightDown", "right-down");
+		rs.Set("rLeftDown", "left-down");
+
+		rs.Set("rRightUp", "right-up");
+		rs.Set("rLeftUp", "left-up");
+
+		rs.Set("rRight", "right");
+		rs.Set("rLeft", "left");
+
+		rs.Set("rUp", "up");
+		rs.Set("rDown", "down");
+	</script>
+</body>
+</html>
